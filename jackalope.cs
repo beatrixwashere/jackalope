@@ -28,8 +28,6 @@ public class jackalope : BaseUnityPlugin
 
     public static GameObject mainCharacter;
 
-    public static Transform mainCharacterTransform;
-
     public static Character mainCharacterScript;
 
     public static Rigidbody2D mainCharacterBody;
@@ -58,6 +56,25 @@ public class jackalope : BaseUnityPlugin
         Logger.LogInfo($"set up savestates!");
     }
 
+    [HarmonyPatch(typeof(Character), "Awake")]
+    [HarmonyPostfix]
+    static void FindCharacters()
+    {
+        // scan for character
+        foreach (UnityEngine.Object obj in FindObjectsOfType(typeof(Character)))
+        {
+            Debug.Log("character found: " + obj.name);
+            // check for challenge mode name
+            if (obj.name == "NotAMeatboy(Clone)")
+            {
+                Debug.Log("character connected!");
+                mainCharacter = GameObject.Find("NotAMeatboy(Clone)");
+                mainCharacterScript = mainCharacter.GetComponent<Character>();
+                mainCharacterBody = mainCharacter.GetComponent<Rigidbody2D>();
+            }
+        }
+    }
+
     [HarmonyPatch(typeof(GameControl), "Update")]
     [HarmonyPostfix]
     static void TASControls()
@@ -84,18 +101,7 @@ public class jackalope : BaseUnityPlugin
         // slowdown
         if (Input.GetKeyDown(KeyCode.Period))
         {
-            if (Time.timeScale == 1.0f)
-            {
-                Time.timeScale = 0.5f;
-            }
-            else if (Time.timeScale == 0.5f)
-            {
-                Time.timeScale = 0.2f;
-            }
-            else if (Time.timeScale == 0.2f)
-            {
-                Time.timeScale = 1.0f;
-            }
+            Time.timeScale = Time.timeScale == 1.0f ? 0.5f : (Time.timeScale == 0.5f ? 0.2f : 1.0f);
             Debug.Log("gamespeed: " + Time.timeScale);
         }
 
@@ -190,23 +196,31 @@ public class jackalope : BaseUnityPlugin
         }
     }
 
-    [HarmonyPatch(typeof(GameControl), "FixedUpdate")]
-    [HarmonyPostfix]
-    static void TASUpdate()
+    [HarmonyPatch(typeof(Character), "fullUpdate")]
+    [HarmonyPrefix]
+    static void TASReplay()
     {
-        // write inputs
-        inputs.Add(new float[8]);
-        inputs[tasFrames][0] = mainCharacterScript.up;
-        inputs[tasFrames][1] = mainCharacterScript.down;
-        inputs[tasFrames][2] = mainCharacterScript.left;
-        inputs[tasFrames][3] = mainCharacterScript.right;
-        inputs[tasFrames][4] = mainCharacterScript.jump ? 1 : 0;
-        inputs[tasFrames][5] = mainCharacterScript.sprint ? 1 : 0;
-        inputs[tasFrames][6] = mainCharacterScript.suicide ? 1 : 0;
-        inputs[tasFrames][7] = mainCharacterScript.dance ? 1 : 0;
-        
-        // update frame count
-        tasFrames += 1;
+        if (tasReplay)
+        {
+            // read inputs
+            if (inputs.Count > tasFrames && mainCharacter != null)
+            {
+                Debug.Log("replaying...");
+                mainCharacterScript.up = inputs[tasFrames][0];
+                mainCharacterScript.down = inputs[tasFrames][1];
+                mainCharacterScript.left = inputs[tasFrames][2];
+                mainCharacterScript.right = inputs[tasFrames][3];
+                mainCharacterScript.jump = inputs[tasFrames][4] == 1;
+                mainCharacterScript.sprint = inputs[tasFrames][5] == 1;
+                mainCharacterScript.suicide = inputs[tasFrames][6] == 1;
+                mainCharacterScript.dance = inputs[tasFrames][7] == 1;
+            }
+            else
+            {
+                tasPause = true;
+                Time.timeScale = 0.0f;
+            }
+        }
     }
 
     [HarmonyPatch(typeof(DigitalClock), "ShowSecondsAsTime")]
@@ -243,54 +257,28 @@ public class jackalope : BaseUnityPlugin
 
             statsDisplay.text = "// jackalope //\n";
             statsDisplay.text += "time: " + timerBuild.ToString() + " (" + tasFrames + "f)\n";
-            statsDisplay.text += "position: (" + mainCharacterTransform.position.x + ", " + mainCharacterTransform.position.y + ")\n";
+            statsDisplay.text += "position: (" + mainCharacter.transform.position.x + ", " + mainCharacter.transform.position.y + ")\n";
             statsDisplay.text += "velocity: (" + mainCharacterBody.velocity.x + ", " + mainCharacterBody.velocity.y + ")\n";
             statsDisplay.text += "gamespeed: " + Time.timeScale + "x\n";
         }
     }
 
-    [HarmonyPatch(typeof(Character), "Awake")]
+    [HarmonyPatch(typeof(GameControl), "FixedUpdate")]
     [HarmonyPostfix]
-    static void FindCharacters()
+    static void TASUpdate()
     {
-        // scan for character
-        foreach (UnityEngine.Object obj in FindObjectsOfType(typeof(Character)))
-        {
-            Debug.Log("character found: " + obj.name);
-            if (obj.name == "NotAMeatboy(Clone)")
-            {
-                Debug.Log("character connected!");
-                mainCharacter = GameObject.Find("NotAMeatboy(Clone)");
-                mainCharacterTransform = mainCharacter.GetComponent<Transform>();
-                mainCharacterScript = mainCharacter.GetComponent<Character>();
-                mainCharacterBody = mainCharacter.GetComponent<Rigidbody2D>();
-            }
-        }
-    }
+        // write inputs
+        inputs.Add(new float[8]);
+        inputs[tasFrames][0] = mainCharacterScript.up;
+        inputs[tasFrames][1] = mainCharacterScript.down;
+        inputs[tasFrames][2] = mainCharacterScript.left;
+        inputs[tasFrames][3] = mainCharacterScript.right;
+        inputs[tasFrames][4] = mainCharacterScript.jump ? 1 : 0;
+        inputs[tasFrames][5] = mainCharacterScript.sprint ? 1 : 0;
+        inputs[tasFrames][6] = mainCharacterScript.suicide ? 1 : 0;
+        inputs[tasFrames][7] = mainCharacterScript.dance ? 1 : 0;
 
-    [HarmonyPatch(typeof(Character), "fullUpdate")]
-    [HarmonyPrefix]
-    static void TASReplay()
-    {
-        if (tasReplay)
-        {
-            if (inputs.Count > tasFrames && mainCharacter != null)
-            {
-                Debug.Log("replaying...");
-                mainCharacterScript.up = inputs[tasFrames][0];
-                mainCharacterScript.down = inputs[tasFrames][1];
-                mainCharacterScript.left = inputs[tasFrames][2];
-                mainCharacterScript.right = inputs[tasFrames][3];
-                mainCharacterScript.jump = inputs[tasFrames][4] == 1;
-                mainCharacterScript.sprint = inputs[tasFrames][5] == 1;
-                mainCharacterScript.suicide = inputs[tasFrames][6] == 1;
-                mainCharacterScript.dance = inputs[tasFrames][7] == 1;
-            }
-            else
-            {
-                tasPause = true;
-                Time.timeScale = 0.0f;
-            }
-        }
+        // update frame count
+        tasFrames += 1;
     }
 }
