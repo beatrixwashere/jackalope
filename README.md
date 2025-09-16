@@ -4,7 +4,7 @@
 
 ---
 
-this is a bepinex mod for ultimate chicken horse, which adds functionality for tool assisted speedrunning.
+this is a bepinex mod for ultimate chicken horse, which adds built in functionality for tool assisted speedrunning. previously, [libtas](https://github.com/clementgallet/libTAS) was used for creating uch tas runs, but came with a lot of inconveniences. this project aims to make creating and optimizing tas runs much easier, and to produce the same deterministic results that libtas does.
 
 read the sections below to get started!
 
@@ -25,13 +25,32 @@ read the sections below to get started!
 - `m` = frame advance
 - `,` = pause/unpause
 - `.` = slowdown game
-- `/` = reset timer and inputs
-- `0-9` = load savestates
-- `shift + 0-9` = save savestates
-- `-` = replay mode
+- `/` = import inputs
+- `-` = toggle replay
 - `=` = fast forward
-- `[` = export inputs
-- `]` = import inputs
+
+---
+
+## input format
+
+each line of an input file is formatted as `frames:inputs`. `inputs` is a comma separated list of which keys to hold down, and `frames` is the amount of frames to hold those keys for.
+
+**input list:**
+- `w` = up
+- `s` = down
+- `a` = left
+- `d` = right
+- `j` = jump
+- `k` = sprint
+- `l` = give up
+- `m` = dance
+
+*example:*
+```
+10:d,k
+20:a,j
+```
+*sprint right for 10 frames, then hold left and jump for 20 frames*
 
 ---
 
@@ -40,18 +59,15 @@ read the sections below to get started!
 all releases are in a stable state, but there are still many features or fixes yet to be added:
 
 **features:**
-- compare against ghosts
+- input file features (breakpoints, comments, etc)
+- controller input support
 - collision display
-- freecam or other camera modes
 - co op support
 - input bruteforcer
 
 **fixes:**
-- resets should be instant
-- loading savestates should get to the save point automatically instead of simply queueing inputs
-- exporting/importing inputs should let you choose a file to save to or load from
-- the tas timer should sync to the level start
-- it is still unknown whether or not the game is deterministic
+- disable the mod if onlinee
+- allow buffering a jump at the start
 
 ---
 
