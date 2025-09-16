@@ -50,6 +50,7 @@ public class jackalope : BaseUnityPlugin
         Harmony.CreateAndPatchAll(typeof(jackalope));
         Logger.LogInfo($"applied patches!");
 
+        // set up variables
         inputs = [];
         Logger.LogInfo($"set up environment!");
     }
@@ -58,7 +59,7 @@ public class jackalope : BaseUnityPlugin
     [HarmonyPostfix]
     static void FindCharacters()
     {
-        // scan for character
+        // scan for characters
         foreach (UnityEngine.Object obj in FindObjectsOfType(typeof(Character)))
         {
             Debug.Log("character found: " + obj.name);
@@ -121,12 +122,16 @@ public class jackalope : BaseUnityPlugin
         // import
         if (Input.GetKeyDown(KeyCode.Slash))
         {
+            // reset inputs
             tasFrames = 0;
             inputs = new List<float[]>();
+
+            // check for tas file
             if (File.Exists(@"C:\Program Files (x86)\Steam\steamapps\common\Ultimate Chicken Horse\tas.txt"))
             {
                 using (StreamReader sr = File.OpenText(@"C:\Program Files (x86)\Steam\steamapps\common\Ultimate Chicken Horse\tas.txt"))
                 {
+                    // set up variables; add an extra input to pad the start
                     string nextline = "";
                     string[] keychecks = { "w", "s", "a", "d", "j", "k", "l", "m" };
                     inputs.Add(new float[8]);
@@ -134,10 +139,14 @@ public class jackalope : BaseUnityPlugin
                     {
                         string[] vals = nextline.Split(":", System.StringSplitOptions.RemoveEmptyEntries);
                         float[] currentinput = new float[8];
+
+                        // check for keys
                         for (int i = 0; i < keychecks.Length; i++)
                         {
                             currentinput[i] = vals[1].Contains(keychecks[i]) ? 1 : 0;
                         }
+
+                        // repeat for the line frame count
                         for (int hold = 0; hold < Convert.ToInt32(vals[0]); hold++)
                         {
                             inputs.Add(currentinput);
@@ -152,6 +161,7 @@ public class jackalope : BaseUnityPlugin
                 //tasPause = false;
                 //Time.timeScale = 1.0f;
 
+                // fix left/right input acceleration issues
                 InputEvent[] e =
                 [
                     new InputEvent(0, InputEvent.InputKey.Left, 1, true),
