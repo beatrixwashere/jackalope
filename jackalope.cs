@@ -17,7 +17,7 @@ public class jackalope : BaseUnityPlugin
 {
     internal static new ManualLogSource Logger;
 
-    public static bool tasPause = true;
+    public static bool tasPause = false;
 
     public static int tasFrames = 0;
 
