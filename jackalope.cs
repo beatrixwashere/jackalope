@@ -39,6 +39,10 @@ public class jackalope : BaseUnityPlugin
 
     public static List<float[]> inputs; // [up, down, left, right, jump, sprint, suicide, dance]
 
+    public static List<int> breaks;
+
+    public static int breakstop;
+
     private void Awake()
     {
         // start plugin
@@ -52,6 +56,7 @@ public class jackalope : BaseUnityPlugin
 
         // set up variables
         inputs = [];
+        breaks = [];
         Logger.LogInfo($"set up environment!");
     }
 
@@ -124,7 +129,9 @@ public class jackalope : BaseUnityPlugin
         {
             // reset inputs
             tasFrames = 0;
-            inputs = new List<float[]>();
+            inputs = [];
+            breaks = [];
+            breakstop = -1;
 
             // check for tas file
             if (File.Exists(@"C:\Program Files (x86)\Steam\steamapps\common\Ultimate Chicken Horse\tas.txt"))
@@ -137,20 +144,56 @@ public class jackalope : BaseUnityPlugin
                     inputs.Add(new float[8]);
                     while ((nextline = sr.ReadLine()) != null)
                     {
-                        string[] vals = nextline.Split(":", System.StringSplitOptions.RemoveEmptyEntries);
-                        float[] currentinput = new float[8];
-
-                        // check for keys
-                        for (int i = 0; i < keychecks.Length; i++)
+                        // comments and blank lines
+                        if (nextline == "")
                         {
-                            currentinput[i] = vals[1].Contains(keychecks[i]) ? 1 : 0;
+                            // do nothing
+                        }
+                        else if (nextline[0] == '#')
+                        {
+                            // do nothing
                         }
 
-                        // repeat for the line frame count
-                        for (int hold = 0; hold < Convert.ToInt32(vals[0]); hold++)
+                        // commands
+                        else if (nextline[0] == '/')
                         {
-                            inputs.Add(currentinput);
-                            tasFrames++;
+                            switch (nextline)
+                            {
+                                case "/stop":
+                                    breakstop = tasFrames;
+                                    breaks.Add(tasFrames);
+                                    break;
+                                case "/break":
+                                    breaks.Add(tasFrames);
+                                    break;
+                                case "/fjump":
+                                    typeof(Character).GetMethod("ForceJump").Invoke(mcharScript, []);
+                                    break;
+                                default:
+                                    Debug.Log("invalid command");
+                                    break;
+                            }
+                        }
+
+                        // input sequences
+                        else
+                        {
+                            // split frames and inputs
+                            string[] vals = nextline.Split(":", System.StringSplitOptions.RemoveEmptyEntries);
+                            float[] currentinput = new float[8];
+
+                            // check for keys
+                            for (int i = 0; i < keychecks.Length; i++)
+                            {
+                                currentinput[i] = vals[1].Contains(keychecks[i]) ? 1 : 0;
+                            }
+
+                            // repeat for the line frame count
+                            for (int hold = 0; hold < Convert.ToInt32(vals[0]); hold++)
+                            {
+                                inputs.Add(currentinput);
+                                tasFrames++;
+                            }
                         }
                     }
                 }
@@ -185,7 +228,7 @@ public class jackalope : BaseUnityPlugin
     [HarmonyPrefix]
     static void TASReplay()
     {
-        if (tasReplay)
+        if (tasReplay && !GameSparksManager.Instance.Connected)
         {
             // read inputs
             if (inputs.Count > tasFrames && mchar != null)
@@ -283,5 +326,19 @@ public class jackalope : BaseUnityPlugin
     {
         // update frame count
         tasFrames += 1;
+
+        // check for breakpoints
+        if (breaks.Count > 0 && tasReplay)
+        {
+            if (breaks[0] == tasFrames)
+            {
+                tasPause = true;
+                breaks.RemoveAt(0);
+                if (breakstop == tasFrames)
+                {
+                    tasReplay = false;
+                }
+            }
+        }
     }
 }
