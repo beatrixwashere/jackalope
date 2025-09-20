@@ -72,6 +72,7 @@ all releases are in a stable state, but there are still many features or fixes y
 **features:**
 - choose a path to load the tas from
 - linux/mac support
+- /setpos, /setvel, and /legal commands
 - controller input support
 - collision display
 - co op support
@@ -81,6 +82,7 @@ all releases are in a stable state, but there are still many features or fixes y
 **fixes:**
 - /fjump might not be fully accurate
 - fast forward has inconsistencies
+- holding the give up key should break out pause and replay mode
 - allow using the mod when online but only in a local level
 
 ---
