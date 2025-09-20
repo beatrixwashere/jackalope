@@ -70,6 +70,8 @@ comments can also be created by putting a `#` at the start of a line, and empty 
 all releases are in a stable state, but there are still many features or fixes yet to be added:
 
 **features:**
+- choose a path to load the tas from
+- linux/mac support
 - controller input support
 - collision display
 - co op support
