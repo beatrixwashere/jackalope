@@ -16,6 +16,8 @@ read the sections below to get started!
 
 *currently, jackalope is only supported on windows, and is exclusive to the steam version. further platform support is planned!*
 
+*jackalope also only works offline, meaning you have to run the game outside of steam or disable the game's internet access*
+
 1. download [bepinex](https://docs.bepinex.dev/articles/user_guide/installation/index.html) and extract it into your ultimate chicken horse folder
 2. download `jackalope.dll` from the releases tab on the right, and put it into your `BepInEx/plugins` folder
 3. run `UltimateChickenHorse.exe`
@@ -72,6 +74,7 @@ all releases are in a stable state, but there are still many features or fixes y
 - collision display
 - co op support
 - input bruteforcer
+- *feel free to suggest more!*
 
 **fixes:**
 - /fjump might not be fully accurate
