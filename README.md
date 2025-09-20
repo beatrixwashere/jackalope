@@ -8,6 +8,8 @@ this is a bepinex mod for ultimate chicken horse, which adds built in functional
 
 read the sections below to get started!
 
+**[here's a video tutorial!](https://youtu.be/nGT22l6avXM)**
+
 ---
 
 ## setup
@@ -52,6 +54,13 @@ each line of an input file is formatted as `frames:inputs`. `inputs` is a comma 
 ```
 *sprint right for 10 frames, then hold left and jump for 20 frames*
 
+**command list:**
+- `/break` = pauses the tas in a certain place
+- `/stop` = same as break but it stops the replay
+- `/fjump` = recreates buffering a jump at the start
+
+comments can also be created by putting a `#` at the start of a line, and empty lines don't get read
+
 ---
 
 ## to do
@@ -59,15 +68,15 @@ each line of an input file is formatted as `frames:inputs`. `inputs` is a comma 
 all releases are in a stable state, but there are still many features or fixes yet to be added:
 
 **features:**
-- input file features (breakpoints, comments, etc)
 - controller input support
 - collision display
 - co op support
 - input bruteforcer
 
 **fixes:**
-- disable the mod if onlinee
-- allow buffering a jump at the start
+- /fjump might not be fully accurate
+- fast forward has inconsistencies
+- allow using the mod when online but only in a local level
 
 ---
 
