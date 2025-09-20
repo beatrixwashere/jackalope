@@ -39,6 +39,12 @@ public class jackalope : BaseUnityPlugin
 
     public static List<float[]> inputs; // [up, down, left, right, jump, sprint, suicide, dance]
 
+    public static List<int> inputlengths;
+
+    public static int currentlength;
+
+    public static List<int> inputlines;
+
     public static List<int> breaks;
 
     public static int breakstop;
@@ -56,6 +62,9 @@ public class jackalope : BaseUnityPlugin
 
         // set up variables
         inputs = [];
+        inputlengths = [];
+        currentlength = 0;
+        inputlines = [];
         breaks = [];
         Logger.LogInfo($"set up environment!");
     }
@@ -64,6 +73,7 @@ public class jackalope : BaseUnityPlugin
     [HarmonyPostfix]
     static void FindCharacters()
     {
+        if (GameSparksManager.Instance.Connected) return;
         // scan for characters
         foreach (UnityEngine.Object obj in FindObjectsOfType(typeof(Character)))
         {
@@ -85,6 +95,7 @@ public class jackalope : BaseUnityPlugin
     static void TASControls()
     {
         // frame advance
+        if (GameSparksManager.Instance.Connected) return;
         if (Input.GetKeyDown(KeyCode.M) && tasPause)
         {
             Debug.Log("advance");
@@ -130,6 +141,9 @@ public class jackalope : BaseUnityPlugin
             // reset inputs
             tasFrames = 0;
             inputs = [];
+            inputlengths = [];
+            currentlength = 0;
+            inputlines = [];
             breaks = [];
             breakstop = -1;
 
@@ -142,6 +156,7 @@ public class jackalope : BaseUnityPlugin
                     string nextline = "";
                     string[] keychecks = { "w", "s", "a", "d", "j", "k", "l", "m" };
                     inputs.Add(new float[8]);
+                    int currentline = 1;
                     while ((nextline = sr.ReadLine()) != null)
                     {
                         // comments and blank lines
@@ -189,20 +204,25 @@ public class jackalope : BaseUnityPlugin
                             }
 
                             // repeat for the line frame count
-                            for (int hold = 0; hold < Convert.ToInt32(vals[0]); hold++)
+                            int inputlen = Convert.ToInt32(vals[0]);
+                            inputlengths.Add(inputlen);
+                            inputlines.Add(currentline);
+                            for (int hold = 0; hold < inputlen; hold++)
                             {
                                 inputs.Add(currentinput);
                                 tasFrames++;
                             }
                         }
+
+                        currentline++;
                     }
                 }
                 tasFrames = 0;
                 Debug.Log("imported!");
 
                 tasReplay = true;
-                //tasPause = false;
-                //Time.timeScale = 1.0f;
+                tasPause = false;
+                Time.timeScale = 1.0f;
 
                 // fix left/right input acceleration issues
                 InputEvent[] e =
@@ -257,7 +277,7 @@ public class jackalope : BaseUnityPlugin
                 tasReplay = false;
             }
         }
-        if (tasResetting)
+        if (tasResetting && !GameSparksManager.Instance.Connected)
         {
             // disable reset mode
             if (Time.timeScale == 1.0f)
@@ -274,16 +294,20 @@ public class jackalope : BaseUnityPlugin
     [HarmonyPrefix]
     static void TASReset()
     {
-        Debug.Log("resetting...");
-        Time.timeScale = 2.0f;
-        tasResetting = true;
-        tasPause = false;
+        if (!GameSparksManager.Instance.Connected)
+        {
+            Debug.Log("resetting...");
+            Time.timeScale = 2.0f;
+            tasResetting = true;
+            tasPause = false;
+        }
     }
 
     [HarmonyPatch(typeof(DigitalClock), "ShowSecondsAsTime")]
     [HarmonyPostfix]
     static void TASStats()
     {
+        if (GameSparksManager.Instance.Connected) return;
         // set up stats display
         if (statsDisplay == null)
         {
@@ -317,6 +341,11 @@ public class jackalope : BaseUnityPlugin
             statsDisplay.text += "position: (" + mchar.transform.position.x + ", " + mchar.transform.position.y + ")\n";
             statsDisplay.text += "velocity: (" + mcharBody.velocity.x + ", " + mcharBody.velocity.y + ")\n";
             statsDisplay.text += "gamespeed: " + Time.timeScale + "x\n";
+            statsDisplay.text += "\n";
+            if (tasReplay)
+            {
+                statsDisplay.text += "replay position: line " + inputlines[0] + ", frame " + currentlength + "\n";
+            }
         }
     }
 
@@ -325,6 +354,7 @@ public class jackalope : BaseUnityPlugin
     static void TASUpdate()
     {
         // update frame count
+        if (GameSparksManager.Instance.Connected) return;
         tasFrames += 1;
 
         // check for breakpoints
@@ -339,6 +369,22 @@ public class jackalope : BaseUnityPlugin
                     tasReplay = false;
                 }
             }
+        }
+
+        // update input lengths
+        if (inputlengths.Count > 0 && tasReplay)
+        {
+            while (currentlength == inputlengths[0])
+            {
+                inputlengths.RemoveAt(0);
+                inputlines.RemoveAt(0);
+                currentlength = 0;
+                if (inputlengths.Count == 0)
+                {
+                    break;
+                }
+            }
+            currentlength++;
         }
     }
 }
