@@ -13,7 +13,7 @@ using UnityEngine.UI;
 namespace jackalope;
 
 //[BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
-[BepInPlugin("com.beatrixwashere.uch.jackalope", "jackalope", "1.0.0")]
+[BepInPlugin("com.beatrixwashere.uch.jackalope", "jackalope", "1.1.1")]
 public class jackalope : BaseUnityPlugin
 {
     internal static new ManualLogSource Logger;
