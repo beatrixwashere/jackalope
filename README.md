@@ -19,8 +19,10 @@ read the sections below to get started!
 *jackalope also only works offline, meaning you have to run the game outside of steam or disable the game's internet access*
 
 1. download [bepinex](https://docs.bepinex.dev/articles/user_guide/installation/index.html) and extract it into your ultimate chicken horse folder
-2. download `jackalope.dll` from the releases tab on the right, and put it into your `BepInEx/plugins` folder
-3. run `UltimateChickenHorse.exe`
+2. run `UltimateChickenHorse.exe` to generate the `config` and `plugins` folders
+3. download `jackalope.dll` from the releases tab on the right, and put it into your `BepInEx/plugins` folder
+4. *(optional)* for debugging, open `BepInEx/config/BepInEx.cfg` and set `Enabled` equal to `true` under `[Logging.Console]`
+5. run `UltimateChickenHorse.exe`
 
 ---
 
