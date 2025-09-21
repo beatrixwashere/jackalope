@@ -9,6 +9,7 @@ using BepInEx.Configuration;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Linq;
 
 namespace jackalope;
 
@@ -195,7 +196,7 @@ public class jackalope : BaseUnityPlugin
                                     typeof(Character).GetMethod("ForceJump").Invoke(mcharScript, []);
                                     break;
                                 default:
-                                    Debug.Log("invalid command");
+                                    Debug.LogError("invalid command in input file: " + nextline);
                                     break;
                             }
                         }
@@ -207,20 +208,27 @@ public class jackalope : BaseUnityPlugin
                             string[] vals = nextline.Split(":", System.StringSplitOptions.RemoveEmptyEntries);
                             float[] currentinput = new float[8];
 
-                            // check for keys
-                            for (int i = 0; i < keychecks.Length; i++)
+                            if (vals.Length == 2)
                             {
-                                currentinput[i] = vals[1].Contains(keychecks[i]) ? 1 : 0;
-                            }
+                                // check for keys
+                                for (int i = 0; i < keychecks.Length; i++)
+                                {
+                                    currentinput[i] = vals[1].Contains(keychecks[i]) ? 1 : 0;
+                                }
 
-                            // repeat for the line frame count
-                            int inputlen = Convert.ToInt32(vals[0]);
-                            inputlengths.Add(inputlen);
-                            inputlines.Add(currentline);
-                            for (int hold = 0; hold < inputlen; hold++)
+                                // repeat for the line frame count
+                                int inputlen = Convert.ToInt32(vals[0]);
+                                inputlengths.Add(inputlen);
+                                inputlines.Add(currentline);
+                                for (int hold = 0; hold < inputlen; hold++)
+                                {
+                                    inputs.Add(currentinput);
+                                    tasFrames++;
+                                }
+                            }
+                            else
                             {
-                                inputs.Add(currentinput);
-                                tasFrames++;
+                                Debug.LogError("invalid line: " + currentline);
                             }
                         }
 
@@ -249,7 +257,7 @@ public class jackalope : BaseUnityPlugin
             }
             else
             {
-                Debug.Log("no file found");
+                Debug.LogError("no file found at " + importpath);
             }
         }
     }
