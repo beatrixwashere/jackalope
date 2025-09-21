@@ -51,7 +51,13 @@ public class jackalope : BaseUnityPlugin
 
     public static List<int> breaks;
 
-    public static int breakstop;
+    public static int breakstop = -1;
+
+    public static List<Vector3> setpos;
+
+    public static List<Vector3> setvel;
+
+    public static bool legalmode = false;
 
     private void Awake()
     {
@@ -77,6 +83,8 @@ public class jackalope : BaseUnityPlugin
         currentlength = 0;
         inputlines = [];
         breaks = [];
+        setpos = [];
+        setvel = [];
         Logger.LogInfo($"set up environment!");
     }
 
@@ -157,6 +165,9 @@ public class jackalope : BaseUnityPlugin
             inputlines = [];
             breaks = [];
             breakstop = -1;
+            setpos = [];
+            setvel = [];
+            legalmode = false;
 
             // check for tas file
             if (File.Exists(importpath.Value))
@@ -183,7 +194,8 @@ public class jackalope : BaseUnityPlugin
                         // commands
                         else if (nextline[0] == '/')
                         {
-                            switch (nextline)
+                            string[] commandargs = nextline.Split(" ", System.StringSplitOptions.RemoveEmptyEntries);
+                            switch (commandargs[0])
                             {
                                 case "/stop":
                                     breakstop = tasFrames;
@@ -194,6 +206,37 @@ public class jackalope : BaseUnityPlugin
                                     break;
                                 case "/fjump":
                                     typeof(Character).GetMethod("ForceJump").Invoke(mcharScript, []);
+                                    break;
+                                case "/setpos":
+                                    if (commandargs.Length == 3)
+                                    {
+                                        setpos.Add(new Vector3(
+                                            (float)Convert.ToDouble(commandargs[1]),
+                                            (float)Convert.ToDouble(commandargs[2]),
+                                            tasFrames
+                                        ));
+                                    }
+                                    else
+                                    {
+                                        Debug.LogError("invalid arguments: " + nextline);
+                                    }
+                                    break;
+                                case "/setvel":
+                                    if (commandargs.Length == 3)
+                                    {
+                                        setvel.Add(new Vector3(
+                                            (float)Convert.ToDouble(commandargs[1]),
+                                            (float)Convert.ToDouble(commandargs[2]),
+                                            tasFrames
+                                        ));
+                                    }
+                                    else
+                                    {
+                                        Debug.LogError("invalid arguments: " + nextline);
+                                    }
+                                    break;
+                                case "/legal":
+                                    legalmode = true;
                                     break;
                                 default:
                                     Debug.LogError("invalid command in input file: " + nextline);
@@ -314,10 +357,13 @@ public class jackalope : BaseUnityPlugin
     {
         if (!(GameSparksManager.Instance.Connected && !GameState.GetInstance().currentSnapshotInfo.snapshotCode.NullOrEmpty()))
         {
-            Debug.Log("resetting...");
-            Time.timeScale = 2.0f;
-            tasResetting = true;
-            tasPause = false;
+            if (statsDisplay != null)
+            {
+                Debug.Log("resetting...");
+                Time.timeScale = 2.0f;
+                tasResetting = true;
+                tasPause = false;
+            }
         }
         else
         {
@@ -375,8 +421,27 @@ public class jackalope : BaseUnityPlugin
     [HarmonyPostfix]
     static void TASUpdate()
     {
-        // update frame count
+        // setpos and setvel commands
         if (GameSparksManager.Instance.Connected && !GameState.GetInstance().currentSnapshotInfo.snapshotCode.NullOrEmpty()) return;
+        if (!legalmode && tasReplay)
+        {
+            if (setpos.Count > 0)
+            {
+                if (setpos[0].z == tasFrames)
+                {
+                    mchar.transform.position = new Vector2(setpos[0].x, setpos[0].y);
+                }
+            }
+            if (setvel.Count > 0)
+            {
+                if (setvel[0].z == tasFrames)
+                {
+                    mcharBody.velocity = new Vector2(setvel[0].x, setvel[0].y);
+                }
+            }
+        }
+
+        // update frame count
         tasFrames += 1;
 
         // check for breakpoints

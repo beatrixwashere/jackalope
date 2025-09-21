@@ -85,7 +85,7 @@ all releases are in a stable state, but there are still many features or fixes y
 
 **fixes:**
 - /fjump might not be fully accurate
-- fast forward has inconsistencies
+- fast forward has inconsistencies, especially with cycles
 - holding the give up key should break out pause and replay mode
 - mac still needs testing
 
