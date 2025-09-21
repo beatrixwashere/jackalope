@@ -14,15 +14,15 @@ read the sections below to get started!
 
 ## setup
 
-*currently, jackalope is only supported on windows, and is exclusive to the steam version. further platform support is planned!*
-
 *jackalope also only works offline, meaning you have to run the game outside of steam or disable the game's internet access*
 
 1. download [bepinex](https://docs.bepinex.dev/articles/user_guide/installation/index.html) and extract it into your ultimate chicken horse folder
+- for mac and linux: version 5.4.22 is recommended
 2. run `UltimateChickenHorse.exe` to generate the `config` and `plugins` folders
+- for mac and linux: run uch through `run_bepinex.sh`; you might need to give it permission to run by using `chmod +x run_bepinex.sh`
 3. download `jackalope.dll` from the releases tab on the right, and put it into your `BepInEx/plugins` folder
 4. *(optional)* for debugging, open `BepInEx/config/BepInEx.cfg` and set `Enabled` equal to `true` under `[Logging.Console]`
-5. run `UltimateChickenHorse.exe`
+5. run `UltimateChickenHorse.exe`!
 6. *(optional)* download the [bepinex config manager](https://github.com/BepInEx/BepInEx.ConfigurationManager) and extract it into your uch folder
 
 ---
@@ -75,8 +75,6 @@ comments can also be created by putting a `#` at the start of a line, and empty 
 all releases are in a stable state, but there are still many features or fixes yet to be added:
 
 **features:**
-- choose a path to load the tas from
-- linux/mac support
 - /setpos, /setvel, and /legal commands
 - controller input support
 - collision display
@@ -89,6 +87,7 @@ all releases are in a stable state, but there are still many features or fixes y
 - fast forward has inconsistencies
 - holding the give up key should break out pause and replay mode
 - allow using the mod when online but only in a local level
+- mac still needs testing
 
 ---
 
