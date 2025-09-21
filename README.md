@@ -65,7 +65,10 @@ each line of an input file is formatted as `frames:inputs`. `inputs` is a comma 
 **command list:**
 - `/break` = pauses the tas in a certain place
 - `/stop` = same as break but it stops the replay
-- `/fjump` = recreates buffering a jump at the start
+- `/fjump` = recreates buffering a jump at the start [only use once]
+- `/setpos x y` = sets the character's position to (x, y) [not legal]
+- `/setvel x y` = sets the chatacter's velocity to (x, y) [not legal]
+- `/legal` = only allows legal inputs/commands [only use once]
 
 comments can also be created by putting a `#` at the start of a line, and empty lines don't get read
 
@@ -76,7 +79,6 @@ comments can also be created by putting a `#` at the start of a line, and empty 
 all releases are in a stable state, but there are still many features or fixes yet to be added:
 
 **features:**
-- /setpos, /setvel, and /legal commands
 - controller input support
 - collision display
 - co op support
