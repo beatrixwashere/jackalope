@@ -23,6 +23,7 @@ read the sections below to get started!
 3. download `jackalope.dll` from the releases tab on the right, and put it into your `BepInEx/plugins` folder
 4. *(optional)* for debugging, open `BepInEx/config/BepInEx.cfg` and set `Enabled` equal to `true` under `[Logging.Console]`
 5. run `UltimateChickenHorse.exe`
+6. *(optional)* download the [bepinex config manager](https://github.com/BepInEx/BepInEx.ConfigurationManager) and extract it into your uch folder
 
 ---
 
@@ -34,6 +35,7 @@ read the sections below to get started!
 - `/` = import inputs
 - `-` = toggle replay
 - `=` = fast forward
+- `f1` = config manager (if installed)
 
 ---
 
@@ -50,6 +52,7 @@ each line of an input file is formatted as `frames:inputs`. `inputs` is a comma 
 - `k` = sprint
 - `l` = give up
 - `m` = dance
+- `_` = no input
 
 *example:*
 ```

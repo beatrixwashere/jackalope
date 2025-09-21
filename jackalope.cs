@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using BepInEx;
 using BepInEx.Logging;
+using BepInEx.Configuration;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
@@ -16,6 +17,8 @@ namespace jackalope;
 public class jackalope : BaseUnityPlugin
 {
     internal static new ManualLogSource Logger;
+
+    private static ConfigEntry<string> importpath;
 
     public static bool tasPause = false;
 
@@ -61,6 +64,13 @@ public class jackalope : BaseUnityPlugin
         Logger.LogInfo($"applied patches!");
 
         // set up variables
+        importpath = Config.Bind(
+            "jackalope",
+            "import_path",
+            @"C:\Program Files (x86)\Steam\steamapps\common\Ultimate Chicken Horse\tas.txt",
+            "the input file that jackalope reads from"
+        );
+
         inputs = [];
         inputlengths = [];
         currentlength = 0;
@@ -148,9 +158,9 @@ public class jackalope : BaseUnityPlugin
             breakstop = -1;
 
             // check for tas file
-            if (File.Exists(@"C:\Program Files (x86)\Steam\steamapps\common\Ultimate Chicken Horse\tas.txt"))
+            if (File.Exists(importpath.Value))
             {
-                using (StreamReader sr = File.OpenText(@"C:\Program Files (x86)\Steam\steamapps\common\Ultimate Chicken Horse\tas.txt"))
+                using (StreamReader sr = File.OpenText(importpath.Value))
                 {
                     // set up variables; add an extra input to pad the start
                     string nextline = "";
