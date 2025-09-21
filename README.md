@@ -87,7 +87,6 @@ all releases are in a stable state, but there are still many features or fixes y
 - /fjump might not be fully accurate
 - fast forward has inconsistencies
 - holding the give up key should break out pause and replay mode
-- allow using the mod when online but only in a local level
 - mac still needs testing
 
 ---
