@@ -83,7 +83,7 @@ public class jackalope : BaseUnityPlugin
     [HarmonyPostfix]
     static void FindCharacters()
     {
-        if (GameSparksManager.Instance.Connected) return;
+        if (GameSparksManager.Instance.Connected && !GameState.GetInstance().currentSnapshotInfo.snapshotCode.NullOrEmpty()) return;
         // scan for characters
         foreach (UnityEngine.Object obj in FindObjectsOfType(typeof(Character)))
         {
@@ -105,7 +105,7 @@ public class jackalope : BaseUnityPlugin
     static void TASControls()
     {
         // frame advance
-        if (GameSparksManager.Instance.Connected) return;
+        if (GameSparksManager.Instance.Connected && !GameState.GetInstance().currentSnapshotInfo.snapshotCode.NullOrEmpty()) return;
         if (Input.GetKeyDown(KeyCode.M) && tasPause)
         {
             Debug.Log("advance");
@@ -258,7 +258,7 @@ public class jackalope : BaseUnityPlugin
     [HarmonyPrefix]
     static void TASReplay()
     {
-        if (tasReplay && !GameSparksManager.Instance.Connected)
+        if (tasReplay && !(GameSparksManager.Instance.Connected && !GameState.GetInstance().currentSnapshotInfo.snapshotCode.NullOrEmpty()))
         {
             // read inputs
             if (inputs.Count > tasFrames && mchar != null)
@@ -287,7 +287,7 @@ public class jackalope : BaseUnityPlugin
                 tasReplay = false;
             }
         }
-        if (tasResetting && !GameSparksManager.Instance.Connected)
+        if (tasResetting && !(GameSparksManager.Instance.Connected && !GameState.GetInstance().currentSnapshotInfo.snapshotCode.NullOrEmpty()))
         {
             // disable reset mode
             if (Time.timeScale == 1.0f)
@@ -304,12 +304,16 @@ public class jackalope : BaseUnityPlugin
     [HarmonyPrefix]
     static void TASReset()
     {
-        if (!GameSparksManager.Instance.Connected)
+        if (!(GameSparksManager.Instance.Connected && !GameState.GetInstance().currentSnapshotInfo.snapshotCode.NullOrEmpty()))
         {
             Debug.Log("resetting...");
             Time.timeScale = 2.0f;
             tasResetting = true;
             tasPause = false;
+        }
+        else
+        {
+            Debug.LogError("levelnet is connected; switch to a locally saved level");
         }
     }
 
@@ -317,7 +321,7 @@ public class jackalope : BaseUnityPlugin
     [HarmonyPostfix]
     static void TASStats()
     {
-        if (GameSparksManager.Instance.Connected) return;
+        if (GameSparksManager.Instance.Connected && !GameState.GetInstance().currentSnapshotInfo.snapshotCode.NullOrEmpty()) return;
         // set up stats display
         if (statsDisplay == null)
         {
@@ -364,7 +368,7 @@ public class jackalope : BaseUnityPlugin
     static void TASUpdate()
     {
         // update frame count
-        if (GameSparksManager.Instance.Connected) return;
+        if (GameSparksManager.Instance.Connected && !GameState.GetInstance().currentSnapshotInfo.snapshotCode.NullOrEmpty()) return;
         tasFrames += 1;
 
         // check for breakpoints
