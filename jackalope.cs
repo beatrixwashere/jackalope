@@ -169,10 +169,21 @@ public class jackalope : BaseUnityPlugin
             setvel = [];
             legalmode = false;
 
-            // check for tas file
+            // check and set import path
+            string pathtouse = "";
             if (File.Exists(importpath.Value))
             {
-                using (StreamReader sr = File.OpenText(importpath.Value))
+                pathtouse = importpath.Value;
+            }
+            else if(File.Exists(importpath.Value + ".txt"))
+            {
+                pathtouse = importpath.Value + ".txt";
+            }
+
+            // check if path is valid
+            if (pathtouse != "")
+            {
+                using (StreamReader sr = File.OpenText(pathtouse))
                 {
                     // set up variables; add an extra input to pad the start
                     string nextline = "";
