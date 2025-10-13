@@ -80,16 +80,22 @@ all releases are in a stable state, but there are still many features or fixes y
 
 **features:**
 - controller input support
+- full savestates
 - collision display
 - co op support
 - input bruteforcer
 - *feel free to suggest more!*
 
 **fixes:**
-- /fjump might not be fully accurate
+- `/fjump` might not be fully accurate
 - fast forward has inconsistencies, especially with cycles
 - holding the give up key should break out pause and replay mode
 - mac still needs testing
+- fallback on `path+".txt"` if the file is not found
+- stabilize object references
+- game speed is changable with the game paused in online games
+- some input file changes can make unintended desyncs(?)
+- *these are known bugs; remember to report anything not included in this list!*
 
 ---
 
