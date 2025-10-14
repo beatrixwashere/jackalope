@@ -29,6 +29,8 @@ public class jackalope : BaseUnityPlugin
 
     public static bool tasResetting = false;
 
+    public static bool cancontrol = false;
+
     public static Text statsDisplay;
 
     public static StringBuilder timerBuild = new StringBuilder(256);
@@ -88,11 +90,27 @@ public class jackalope : BaseUnityPlugin
         Logger.LogInfo($"set up environment!");
     }
 
+    [HarmonyPatch(typeof(TreehouseButton), "Awake")]
+    [HarmonyPrefix]
+    static void DisableControls()
+    {
+        cancontrol = false;
+        Debug.Log("disabled control");
+    }
+
+    [HarmonyPatch(typeof(ChallengeControl), "TriggerSinglePlayerStart")]
+    [HarmonyPrefix]
+    static void EnableControls()
+    {
+        cancontrol = true;
+        Debug.Log("enabled control");
+    }
+
     [HarmonyPatch(typeof(Character), "Awake")]
     [HarmonyPostfix]
     static void FindCharacters()
     {
-        if (GameSparksManager.Instance.Connected && !GameState.GetInstance().currentSnapshotInfo.snapshotCode.NullOrEmpty()) return;
+        if (GameSparksManager.Instance.Connected && !GameState.GetInstance().currentSnapshotInfo.snapshotCode.NullOrEmpty() && cancontrol) return;
         // scan for characters
         foreach (UnityEngine.Object obj in FindObjectsOfType(typeof(Character)))
         {
@@ -114,7 +132,7 @@ public class jackalope : BaseUnityPlugin
     static void TASControls()
     {
         // frame advance
-        if (GameSparksManager.Instance.Connected && !GameState.GetInstance().currentSnapshotInfo.snapshotCode.NullOrEmpty()) return;
+        if (GameSparksManager.Instance.Connected && !GameState.GetInstance().currentSnapshotInfo.snapshotCode.NullOrEmpty() && cancontrol) return;
         if (Input.GetKeyDown(KeyCode.M) && tasPause)
         {
             Debug.Log("advance");
@@ -320,7 +338,7 @@ public class jackalope : BaseUnityPlugin
     [HarmonyPrefix]
     static void TASReplay()
     {
-        if (tasReplay && !(GameSparksManager.Instance.Connected && !GameState.GetInstance().currentSnapshotInfo.snapshotCode.NullOrEmpty()))
+        if (tasReplay && !(GameSparksManager.Instance.Connected && !GameState.GetInstance().currentSnapshotInfo.snapshotCode.NullOrEmpty() && cancontrol))
         {
             // read inputs
             if (inputs.Count > tasFrames && mchar != null)
@@ -349,7 +367,7 @@ public class jackalope : BaseUnityPlugin
                 tasReplay = false;
             }
         }
-        if (tasResetting && !(GameSparksManager.Instance.Connected && !GameState.GetInstance().currentSnapshotInfo.snapshotCode.NullOrEmpty()))
+        if (tasResetting && !(GameSparksManager.Instance.Connected && !GameState.GetInstance().currentSnapshotInfo.snapshotCode.NullOrEmpty() && cancontrol))
         {
             // disable reset mode
             if (Time.timeScale == 1.0f)
@@ -366,7 +384,7 @@ public class jackalope : BaseUnityPlugin
     [HarmonyPrefix]
     static void TASReset()
     {
-        if (!(GameSparksManager.Instance.Connected && !GameState.GetInstance().currentSnapshotInfo.snapshotCode.NullOrEmpty()))
+        if (!(GameSparksManager.Instance.Connected && !GameState.GetInstance().currentSnapshotInfo.snapshotCode.NullOrEmpty() && cancontrol))
         {
             if (statsDisplay != null)
             {
@@ -386,7 +404,7 @@ public class jackalope : BaseUnityPlugin
     [HarmonyPostfix]
     static void TASStats()
     {
-        if (GameSparksManager.Instance.Connected && !GameState.GetInstance().currentSnapshotInfo.snapshotCode.NullOrEmpty()) return;
+        if (GameSparksManager.Instance.Connected && !GameState.GetInstance().currentSnapshotInfo.snapshotCode.NullOrEmpty() && cancontrol) return;
         // set up stats display
         if (statsDisplay == null)
         {
@@ -433,7 +451,7 @@ public class jackalope : BaseUnityPlugin
     static void TASUpdate()
     {
         // setpos and setvel commands
-        if (GameSparksManager.Instance.Connected && !GameState.GetInstance().currentSnapshotInfo.snapshotCode.NullOrEmpty()) return;
+        if (GameSparksManager.Instance.Connected && !GameState.GetInstance().currentSnapshotInfo.snapshotCode.NullOrEmpty() && cancontrol) return;
         if (!legalmode && tasReplay)
         {
             if (setpos.Count > 0)
