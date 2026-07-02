@@ -1,9 +1,5 @@
 # jackalope
 
-*note: this mod is a work in progress; please report any bugs or suggestions on the issues tab of this repository, or in the [uch tasing discord](https://discord.gg/5SFJPZ5Bwe)*
-
----
-
 this is a bepinex mod for ultimate chicken horse, which adds built in functionality for tool assisted speedrunning. previously, [libtas](https://github.com/clementgallet/libTAS) was used for creating uch tas runs, but came with a lot of inconveniences. this project aims to make creating and optimizing tas runs much easier, and to produce the same deterministic results that libtas does.
 
 read the sections below to get started!
