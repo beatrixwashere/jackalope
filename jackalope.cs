@@ -14,7 +14,7 @@ using System.Linq;
 namespace jackalope;
 
 //[BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
-[BepInPlugin("com.beatrixwashere.uch.jackalope", "jackalope", "1.1.1")]
+[BepInPlugin("com.beatrixwashere.uch.jackalope", "jackalope", "1.1.3")]
 public class jackalope : BaseUnityPlugin
 {
     internal static new ManualLogSource Logger;
@@ -65,12 +65,12 @@ public class jackalope : BaseUnityPlugin
     {
         // start plugin
         Logger = base.Logger;
-        Logger.LogInfo($"loaded jackalope!");
+        Logger.LogInfo("loaded jackalope!");
 
         // patch dll
-        Logger.LogInfo($"attempting to patch...");
+        Logger.LogInfo("attempting to patch...");
         Harmony.CreateAndPatchAll(typeof(jackalope));
-        Logger.LogInfo($"applied patches!");
+        Logger.LogInfo("applied patches!");
 
         // set up variables
         importpath = Config.Bind(
@@ -87,7 +87,7 @@ public class jackalope : BaseUnityPlugin
         breaks = [];
         setpos = [];
         setvel = [];
-        Logger.LogInfo($"set up environment!");
+        Logger.LogInfo("set up environment!");
     }
 
     [HarmonyPatch(typeof(TreehouseButton), "Awake")]
@@ -95,7 +95,7 @@ public class jackalope : BaseUnityPlugin
     static void DisableControls()
     {
         cancontrol = false;
-        Debug.Log("disabled control");
+        Logger.LogInfo("disabled control");
     }
 
     [HarmonyPatch(typeof(ChallengeControl), "TriggerSinglePlayerStart")]
@@ -103,7 +103,7 @@ public class jackalope : BaseUnityPlugin
     static void EnableControls()
     {
         cancontrol = true;
-        Debug.Log("enabled control");
+        Logger.LogInfo("enabled control");
     }
 
     [HarmonyPatch(typeof(Character), "Awake")]
@@ -114,11 +114,11 @@ public class jackalope : BaseUnityPlugin
         // scan for characters
         foreach (UnityEngine.Object obj in FindObjectsOfType(typeof(Character)))
         {
-            Debug.Log("character found: " + obj.name);
+            Logger.LogInfo("character found: " + obj.name);
             // check for challenge mode name
             if (obj.name == "NotAMeatboy(Clone)")
             {
-                Debug.Log("character connected!");
+                Logger.LogInfo("character connected!");
                 mchar = GameObject.Find("NotAMeatboy(Clone)");
                 mcharScript = mchar.GetComponent<Character>();
                 mcharBody = mchar.GetComponent<Rigidbody2D>();
@@ -135,7 +135,7 @@ public class jackalope : BaseUnityPlugin
         if (GameSparksManager.Instance.Connected && !GameState.GetInstance().currentSnapshotInfo.snapshotCode.NullOrEmpty() && cancontrol) return;
         if (Input.GetKeyDown(KeyCode.M) && tasPause)
         {
-            Debug.Log("advance");
+            Logger.LogInfo("advance");
             Time.timeScale = 1.0f;
         }
         else if (Time.timeScale > 0.0f && tasPause)
@@ -148,28 +148,28 @@ public class jackalope : BaseUnityPlugin
         {
             tasPause = !tasPause;
             Time.timeScale = tasPause ? 0.0f : 1.0f;
-            Debug.Log("pause: " + tasPause);
+            Logger.LogInfo("pause: " + tasPause);
         }
 
         // slowdown
         if (Input.GetKeyDown(KeyCode.Period))
         {
             Time.timeScale = Time.timeScale == 1.0f ? 0.5f : (Time.timeScale == 0.5f ? 0.2f : 1.0f);
-            Debug.Log("gamespeed: " + Time.timeScale);
+            Logger.LogInfo("gamespeed: " + Time.timeScale);
         }
 
         // replay
         if (Input.GetKeyDown(KeyCode.Minus))
         {
             tasReplay = !tasReplay;
-            Debug.Log("replay: " + tasReplay);
+            Logger.LogInfo("replay: " + tasReplay);
         }
 
         // fast forward
         if (Input.GetKeyDown(KeyCode.Equals))
         {
             Time.timeScale = Time.timeScale < 5.0f ? 5.0f : 1.0f;
-            Debug.Log("fast forward: " + (Time.timeScale == 5.0f));
+            Logger.LogInfo("fast forward: " + (Time.timeScale == 5.0f));
         }
 
         // import
@@ -308,7 +308,7 @@ public class jackalope : BaseUnityPlugin
                     }
                 }
                 tasFrames = 0;
-                Debug.Log("imported!");
+                Logger.LogInfo("imported!");
 
                 tasReplay = true;
                 tasPause = false;
@@ -343,7 +343,7 @@ public class jackalope : BaseUnityPlugin
             // read inputs
             if (inputs.Count > tasFrames && mchar != null)
             {
-                Debug.Log("replaying...");
+                Logger.LogInfo("replaying...");
                 InputEvent[] e =
                 [
                     new InputEvent(0, InputEvent.InputKey.Up, inputs[tasFrames][0], true),
@@ -388,7 +388,7 @@ public class jackalope : BaseUnityPlugin
         {
             if (statsDisplay != null)
             {
-                Debug.Log("resetting...");
+                Logger.LogInfo("resetting...");
                 Time.timeScale = 2.0f;
                 tasResetting = true;
                 tasPause = false;
@@ -408,7 +408,7 @@ public class jackalope : BaseUnityPlugin
         // set up stats display
         if (statsDisplay == null)
         {
-            Debug.Log("finding text component...");
+            Logger.LogInfo("finding text component...");
             statsDisplay = GameObject.Find("TimeText").GetComponent<Text>();
             if (statsDisplay != null)
             {
@@ -418,7 +418,7 @@ public class jackalope : BaseUnityPlugin
                 statsDisplay.fontSize = 20;
                 statsDisplay.alignment = TextAnchor.UpperLeft;
                 statsDisplay.text = "(NOT CONNECTED)";
-                Debug.Log("created stats display");
+                Logger.LogInfo("created stats display");
             }
         }
 
@@ -441,7 +441,7 @@ public class jackalope : BaseUnityPlugin
             statsDisplay.text += "\n";
             if (tasReplay)
             {
-                statsDisplay.text += "replay position: line " + inputlines[0] + ", frame " + currentlength + "\n";
+                statsDisplay.text += "replay position: line " + (inputlines.Count > 0 ? inputlines[0] : "n/a") + ", frame " + currentlength + "\n";
             }
         }
     }
