@@ -76,7 +76,7 @@ all releases are in a stable state, but there are still many features or fixes y
 
 **features:**
 - controller input support
-- full savestates
+- better savestates
 - collision display
 - co op support
 - input bruteforcer
@@ -88,8 +88,8 @@ all releases are in a stable state, but there are still many features or fixes y
 - holding the give up key should break out pause and replay mode
 - mac still needs testing
 - stabilize object references
-- game speed is changable with the game paused in online games
 - some input file changes can make unintended desyncs(?)
+- `/setpos` and `/setvel` have some inconsistencies
 - *these are known bugs; remember to report anything not included in this list!*
 
 ---
