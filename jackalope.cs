@@ -294,20 +294,27 @@ public class jackalope : BaseUnityPlugin
                                     }
                                     break;
                                 case "/start":
-                                    if (commandargs.Length == 5)
+                                    if(legalmode)
                                     {
-                                        mchar.transform.position = new Vector2(
-                                            (float)Convert.ToDouble(commandargs[1]),
-                                            (float)Convert.ToDouble(commandargs[2])
-                                        );
-                                        mcharBody.velocity = new Vector2(
-                                            (float)Convert.ToDouble(commandargs[3]),
-                                            (float)Convert.ToDouble(commandargs[4])
-                                        );
+                                        if (commandargs.Length == 5)
+                                        {
+                                            mchar.transform.position = new Vector2(
+                                                (float)Convert.ToDouble(commandargs[1]),
+                                                (float)Convert.ToDouble(commandargs[2])
+                                            );
+                                            mcharBody.velocity = new Vector2(
+                                                (float)Convert.ToDouble(commandargs[3]),
+                                                (float)Convert.ToDouble(commandargs[4])
+                                            );
+                                        }
+                                        else
+                                        {
+                                            Logger.LogError("invalid arguments: " + nextline);
+                                        }
                                     }
                                     else
                                     {
-                                        Logger.LogError("invalid arguments: " + nextline);
+                                        Logger.LogError("/start not allowed in legal mode");
                                     }
                                     break;
                                 default:
