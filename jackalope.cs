@@ -10,6 +10,7 @@ using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Linq;
+using UnityEngine.UIElements.UIR;
 
 namespace jackalope;
 
@@ -61,6 +62,10 @@ public class jackalope : BaseUnityPlugin
 
     public static bool legalmode = false;
 
+    public static Vector2[] statepos;
+
+    public static Vector2[] statevel;
+
     private void Awake()
     {
         // start plugin
@@ -87,6 +92,8 @@ public class jackalope : BaseUnityPlugin
         breaks = [];
         setpos = [];
         setvel = [];
+        statepos = new Vector2[10];
+        statevel = new Vector2[10];
         Logger.LogInfo("set up environment!");
     }
 
@@ -247,7 +254,7 @@ public class jackalope : BaseUnityPlugin
                                     }
                                     else
                                     {
-                                        Debug.LogError("invalid arguments: " + nextline);
+                                        Logger.LogError("invalid arguments: " + nextline);
                                     }
                                     break;
                                 case "/setvel":
@@ -261,14 +268,50 @@ public class jackalope : BaseUnityPlugin
                                     }
                                     else
                                     {
-                                        Debug.LogError("invalid arguments: " + nextline);
+                                        Logger.LogError("invalid arguments: " + nextline);
                                     }
                                     break;
                                 case "/legal":
                                     legalmode = true;
                                     break;
+                                case "/state":
+                                    if (commandargs.Length == 6)
+                                    {
+                                        int slot = Convert.ToInt32(commandargs[1]);
+                                        Logger.LogInfo("saving state " + slot);
+                                        statepos[slot] = new Vector2(
+                                            (float)Convert.ToDouble(commandargs[2]),
+                                            (float)Convert.ToDouble(commandargs[3])
+                                        );
+                                        statevel[slot] = new Vector2(
+                                            (float)Convert.ToDouble(commandargs[4]),
+                                            (float)Convert.ToDouble(commandargs[5])
+                                        );
+                                    }
+                                    else
+                                    {
+                                        Logger.LogError("invalid arguments: " + nextline);
+                                    }
+                                    break;
+                                case "/start":
+                                    if (commandargs.Length == 5)
+                                    {
+                                        mchar.transform.position = new Vector2(
+                                            (float)Convert.ToDouble(commandargs[1]),
+                                            (float)Convert.ToDouble(commandargs[2])
+                                        );
+                                        mcharBody.velocity = new Vector2(
+                                            (float)Convert.ToDouble(commandargs[3]),
+                                            (float)Convert.ToDouble(commandargs[4])
+                                        );
+                                    }
+                                    else
+                                    {
+                                        Logger.LogError("invalid arguments: " + nextline);
+                                    }
+                                    break;
                                 default:
-                                    Debug.LogError("invalid command in input file: " + nextline);
+                                    Logger.LogError("invalid command in input file: " + nextline);
                                     break;
                             }
                         }
@@ -300,7 +343,7 @@ public class jackalope : BaseUnityPlugin
                             }
                             else
                             {
-                                Debug.LogError("invalid line: " + currentline);
+                                Logger.LogError("invalid line: " + currentline);
                             }
                         }
 
@@ -329,7 +372,27 @@ public class jackalope : BaseUnityPlugin
             }
             else
             {
-                Debug.LogError("no file found at " + importpath);
+                Logger.LogError("no file found at " + importpath);
+            }
+        }
+
+        // starting states
+        for(int i = 0; i < 10; i++)
+        {
+            if(Input.GetKeyDown((KeyCode)(i + 48)))
+            {
+                if(Input.GetKey(KeyCode.LeftShift))
+                {
+                    Logger.LogInfo("saving state " + i);
+                    statepos[i] = mchar.transform.position;
+                    statevel[i] = mcharBody.velocity;
+                }
+                else
+                {
+                    Logger.LogInfo("loading state " + i);
+                    mchar.transform.position = statepos[i];
+                    mcharBody.velocity = statevel[i];
+                }
             }
         }
     }
@@ -396,7 +459,7 @@ public class jackalope : BaseUnityPlugin
         }
         else
         {
-            Debug.LogError("levelnet is connected; switch to a locally saved level");
+            Logger.LogError("levelnet is connected; switch to a locally saved level");
         }
     }
 
@@ -459,6 +522,7 @@ public class jackalope : BaseUnityPlugin
                 if (setpos[0].z == tasFrames)
                 {
                     mchar.transform.position = new Vector2(setpos[0].x, setpos[0].y);
+                    setpos.RemoveAt(0);
                 }
             }
             if (setvel.Count > 0)
@@ -466,6 +530,7 @@ public class jackalope : BaseUnityPlugin
                 if (setvel[0].z == tasFrames)
                 {
                     mcharBody.velocity = new Vector2(setvel[0].x, setvel[0].y);
+                    setvel.RemoveAt(0);
                 }
             }
         }
