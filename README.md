@@ -33,6 +33,10 @@ read the sections below to get started!
 - `-` = toggle replay
 - `=` = fast forward
 - `f1` = config manager (if installed)
+- `0-9` = load savestate
+- `shift+0-9` = save savestate
+
+*note: savestates currently only save position and velocity*
 
 ---
 
@@ -65,6 +69,8 @@ each line of an input file is formatted as `frames:inputs`. `inputs` is a comma 
 - `/setpos x y` = sets the character's position to (x, y) [not legal]
 - `/setvel x y` = sets the chatacter's velocity to (x, y) [not legal]
 - `/legal` = only allows legal inputs/commands [only use once]
+- `/state # px py vx vy` = saves a state to key # with position (px, py) and velocity (vx, vy)
+- `/start px py vx vy` = sets position (px, py) and velocity (vx, vy) [not legal]
 
 comments can also be created by putting a `#` at the start of a line, and empty lines don't get read
 
