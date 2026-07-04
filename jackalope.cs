@@ -66,6 +66,8 @@ public class jackalope : BaseUnityPlugin
 
     public static Vector2[] statevel;
 
+    public static ZoomCamera zcam;
+
     private void Awake()
     {
         // start plugin
@@ -130,6 +132,7 @@ public class jackalope : BaseUnityPlugin
                 mcharScript = mchar.GetComponent<Character>();
                 mcharBody = mchar.GetComponent<Rigidbody2D>();
                 mcharIR = typeof(Character).GetMethod("ReceiveEvent");
+                zcam = LobbyManager.instance.CurrentGameController.MainCamera;
             }
         }
     }
@@ -399,6 +402,7 @@ public class jackalope : BaseUnityPlugin
                     Logger.LogInfo("loading state " + i);
                     mchar.transform.position = statepos[i];
                     mcharBody.velocity = statevel[i];
+                    zcam.transform.position = new Vector3(statepos[i].x, statepos[i].y, -250);
                 }
             }
         }
