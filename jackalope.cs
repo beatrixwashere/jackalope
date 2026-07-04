@@ -133,6 +133,7 @@ public class jackalope : BaseUnityPlugin
                 mcharBody = mchar.GetComponent<Rigidbody2D>();
                 mcharIR = typeof(Character).GetMethod("ReceiveEvent");
                 zcam = LobbyManager.instance.CurrentGameController.MainCamera;
+                typeof(ZoomCamera).GetField("freeFormCamEnabled", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(zcam, true);
             }
         }
     }
@@ -548,6 +549,12 @@ public class jackalope : BaseUnityPlugin
 
         // update frame count
         tasFrames += 1;
+
+        // prevent manualzoom
+        if(zcam != null)
+        {
+            zcam.manualZoom = false;
+        }
 
         // check for breakpoints
         if (breaks.Count > 0 && tasReplay)
