@@ -35,6 +35,7 @@ read the sections below to get started!
 - `f1` = config manager (if installed)
 - `0-9` = load savestate
 - `shift+0-9` = save savestate
+- `backspace` = instant reset
 
 *note: savestates currently only save position and velocity*
 

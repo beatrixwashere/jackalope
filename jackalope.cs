@@ -407,6 +407,19 @@ public class jackalope : BaseUnityPlugin
                 }
             }
         }
+
+        // instant reset
+        if (Input.GetKeyDown(KeyCode.Backspace))
+        {
+            tasReplay = false;
+            tasPause = false;
+            Time.timeScale = 1.0f;
+            mcharScript.suicide = true;
+            typeof(Character).GetField("backDownOnEnable", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(mcharScript, false);
+            typeof(Character).GetField("suicideTimer", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(mcharScript, 5.0f);
+            typeof(Character).GetField("wantsToRetryUsed", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(mcharScript, false);
+            typeof(Character).GetMethod("UpdateSuicidalState", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(mcharScript, []);
+        }
     }
 
     [HarmonyPatch(typeof(Character), "FixedUpdate")]
