@@ -38,6 +38,14 @@ read the sections below to get started!
 
 *note: savestates currently only save position and velocity*
 
+**freecam controls:**
+- `\` = enable freecam
+- `ijkl` = up, left, down, right
+- `u` = zoom out
+- `o` = zoom in
+- `[` = decrease control speed
+- `]` = increase control speed
+
 ---
 
 ## input format
