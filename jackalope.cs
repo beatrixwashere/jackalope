@@ -247,6 +247,11 @@ public class jackalope : BaseUnityPlugin
                                     typeof(Character).GetMethod("ForceJump").Invoke(mcharScript, []);
                                     break;
                                 case "/setpos":
+                                    if (legalmode)
+                                    {
+                                        Logger.LogError("/setpos not allowed in legal mode");
+                                        break;
+                                    }
                                     if (commandargs.Length == 3)
                                     {
                                         setpos.Add(new Vector3(
@@ -261,6 +266,11 @@ public class jackalope : BaseUnityPlugin
                                     }
                                     break;
                                 case "/setvel":
+                                    if (legalmode)
+                                    {
+                                        Logger.LogError("/setvel not allowed in legal mode");
+                                        break;
+                                    }
                                     if (commandargs.Length == 3)
                                     {
                                         setvel.Add(new Vector3(
@@ -297,27 +307,25 @@ public class jackalope : BaseUnityPlugin
                                     }
                                     break;
                                 case "/start":
-                                    if(legalmode)
+                                    if (legalmode)
                                     {
-                                        if (commandargs.Length == 5)
-                                        {
-                                            mchar.transform.position = new Vector2(
-                                                (float)Convert.ToDouble(commandargs[1]),
-                                                (float)Convert.ToDouble(commandargs[2])
-                                            );
-                                            mcharBody.velocity = new Vector2(
-                                                (float)Convert.ToDouble(commandargs[3]),
-                                                (float)Convert.ToDouble(commandargs[4])
-                                            );
-                                        }
-                                        else
-                                        {
-                                            Logger.LogError("invalid arguments: " + nextline);
-                                        }
+                                        Logger.LogError("/start not allowed in legal mode");
+                                        break;
+                                    }
+                                    if (commandargs.Length == 5)
+                                    {
+                                        mchar.transform.position = new Vector2(
+                                            (float)Convert.ToDouble(commandargs[1]),
+                                            (float)Convert.ToDouble(commandargs[2])
+                                        );
+                                        mcharBody.velocity = new Vector2(
+                                            (float)Convert.ToDouble(commandargs[3]),
+                                            (float)Convert.ToDouble(commandargs[4])
+                                        );
                                     }
                                     else
                                     {
-                                        Logger.LogError("/start not allowed in legal mode");
+                                        Logger.LogError("invalid arguments: " + nextline);
                                     }
                                     break;
                                 default:
