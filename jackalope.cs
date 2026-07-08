@@ -241,6 +241,7 @@ public class jackalope : BaseUnityPlugin
                                     breakstop = tasFrames;
                                     breaks.Add(tasFrames);
                                     break;
+                                case "/b":
                                 case "/break":
                                     breaks.Add(tasFrames);
                                     break;
