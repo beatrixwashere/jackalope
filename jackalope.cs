@@ -123,7 +123,6 @@ public class jackalope : BaseUnityPlugin
         // scan for characters
         foreach (UnityEngine.Object obj in FindObjectsOfType(typeof(Character)))
         {
-            Logger.LogInfo("character found: " + obj.name);
             // check for challenge mode name
             if (obj.name == "NotAMeatboy(Clone)")
             {
@@ -146,7 +145,6 @@ public class jackalope : BaseUnityPlugin
         if (GameSparksManager.Instance.Connected && !GameState.GetInstance().currentSnapshotInfo.snapshotCode.NullOrEmpty() && cancontrol) return;
         if (Input.GetKeyDown(KeyCode.M) && tasPause)
         {
-            Logger.LogInfo("advance");
             Time.timeScale = 1.0f;
         }
         else if (Time.timeScale > 0.0f && tasPause)
@@ -432,7 +430,6 @@ public class jackalope : BaseUnityPlugin
             // read inputs
             if (inputs.Count > tasFrames && mchar != null)
             {
-                Logger.LogInfo("replaying...");
                 InputEvent[] e =
                 [
                     new InputEvent(0, InputEvent.InputKey.Up, inputs[tasFrames][0], true),
