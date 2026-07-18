@@ -137,6 +137,245 @@ public class jackalope : BaseUnityPlugin
         }
     }
 
+    static void InstantReset()
+    {
+        tasReplay = false;
+        tasPause = true;
+        Time.timeScale = 1.0f;
+        InputEvent[] e =
+        [
+            new InputEvent(0, InputEvent.InputKey.Up, 0, true),
+            new InputEvent(0, InputEvent.InputKey.Down, 0, true),
+            new InputEvent(0, InputEvent.InputKey.Left, 0, true),
+            new InputEvent(0, InputEvent.InputKey.Right, 0, true),
+            new InputEvent(0, InputEvent.InputKey.Jump, false, true),
+            new InputEvent(0, InputEvent.InputKey.Sprint, false, true),
+            new InputEvent(0, InputEvent.InputKey.Suicide, false, true),
+            new InputEvent(0, InputEvent.InputKey.Inventory, false, true),
+        ];
+        for (int i = 0; i < e.Length; i++)
+        {
+            mcharIR.Invoke(mcharScript, [e[i]]);
+        }
+        typeof(ChallengeControl).GetMethod("ToPlaceMode", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(LobbyManager.instance.CurrentGameController, []);
+        typeof(ChallengeControl).GetMethod("ToPlayMode", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(LobbyManager.instance.CurrentGameController, []);
+        typeof(ChallengeControl).GetField("singlePlayerDelayTime").SetValue(LobbyManager.instance.CurrentGameController, 0.0f);
+        typeof(ChallengeControl).GetMethod("TriggerSinglePlayerStart", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(LobbyManager.instance.CurrentGameController, []);
+        zcam.transform.position = new Vector3(mchar.transform.position.x, mchar.transform.position.y, -250);
+    }
+
+    static void StartReplay()
+    {
+        // reset inputs
+        tasFrames = 0;
+        inputs = [];
+        inputlengths = [];
+        currentlength = 0;
+        inputlines = [];
+        breaks = [];
+        breakstop = -1;
+        setpos = [];
+        setvel = [];
+        legalmode = false;
+
+        // check and set import path
+        string pathtouse = "";
+        if (File.Exists(importpath.Value))
+        {
+            pathtouse = importpath.Value;
+        }
+        else if(File.Exists(importpath.Value + ".txt"))
+        {
+            pathtouse = importpath.Value + ".txt";
+        }
+
+        // check if path is valid
+        if (pathtouse != "")
+        {
+            using (StreamReader sr = File.OpenText(pathtouse))
+            {
+                // set up variables; add an extra input to pad the start
+                string nextline = "";
+                string[] keychecks = { "w", "s", "a", "d", "j", "k", "l", "m" };
+                inputs.Add(new float[8]);
+                int currentline = 1;
+                while ((nextline = sr.ReadLine()) != null)
+                {
+                    // comments and blank lines
+                    if (nextline == "")
+                    {
+                        // do nothing
+                    }
+                    else if (nextline[0] == '#')
+                    {
+                        // do nothing
+                    }
+
+                    // commands
+                    else if (nextline[0] == '/')
+                    {
+                        string[] commandargs = nextline.Split(" ", System.StringSplitOptions.RemoveEmptyEntries);
+                        switch (commandargs[0])
+                        {
+                            case "/stop":
+                                breakstop = tasFrames;
+                                breaks.Add(tasFrames);
+                                break;
+                            case "/b":
+                            case "/break":
+                                breaks.Add(tasFrames);
+                                break;
+                            case "/fjump":
+                                typeof(Character).GetMethod("ForceJump").Invoke(mcharScript, []);
+                                break;
+                            case "/setpos":
+                                if (legalmode)
+                                {
+                                    Logger.LogError("/setpos not allowed in legal mode");
+                                    break;
+                                }
+                                if (commandargs.Length == 3)
+                                {
+                                    setpos.Add(new Vector3(
+                                        (float)Convert.ToDouble(commandargs[1]),
+                                        (float)Convert.ToDouble(commandargs[2]),
+                                        tasFrames
+                                    ));
+                                }
+                                else
+                                {
+                                    Logger.LogError("invalid arguments: " + nextline);
+                                }
+                                break;
+                            case "/setvel":
+                                if (legalmode)
+                                {
+                                    Logger.LogError("/setvel not allowed in legal mode");
+                                    break;
+                                }
+                                if (commandargs.Length == 3)
+                                {
+                                    setvel.Add(new Vector3(
+                                        (float)Convert.ToDouble(commandargs[1]),
+                                        (float)Convert.ToDouble(commandargs[2]),
+                                        tasFrames
+                                    ));
+                                }
+                                else
+                                {
+                                    Logger.LogError("invalid arguments: " + nextline);
+                                }
+                                break;
+                            case "/legal":
+                                legalmode = true;
+                                break;
+                            case "/state":
+                                if (commandargs.Length == 6)
+                                {
+                                    int slot = Convert.ToInt32(commandargs[1]);
+                                    Logger.LogInfo("saving state " + slot);
+                                    statepos[slot] = new Vector2(
+                                        (float)Convert.ToDouble(commandargs[2]),
+                                        (float)Convert.ToDouble(commandargs[3])
+                                    );
+                                    statevel[slot] = new Vector2(
+                                        (float)Convert.ToDouble(commandargs[4]),
+                                        (float)Convert.ToDouble(commandargs[5])
+                                    );
+                                }
+                                else
+                                {
+                                    Logger.LogError("invalid arguments: " + nextline);
+                                }
+                                break;
+                            case "/start":
+                                if (legalmode)
+                                {
+                                    Logger.LogError("/start not allowed in legal mode");
+                                    break;
+                                }
+                                if (commandargs.Length == 5)
+                                {
+                                    mchar.transform.position = new Vector2(
+                                        (float)Convert.ToDouble(commandargs[1]),
+                                        (float)Convert.ToDouble(commandargs[2])
+                                    );
+                                    mcharBody.velocity = new Vector2(
+                                        (float)Convert.ToDouble(commandargs[3]),
+                                        (float)Convert.ToDouble(commandargs[4])
+                                    );
+                                }
+                                else
+                                {
+                                    Logger.LogError("invalid arguments: " + nextline);
+                                }
+                                break;
+                            default:
+                                Logger.LogError("invalid command in input file: " + nextline);
+                                break;
+                        }
+                    }
+
+                    // input sequences
+                    else
+                    {
+                        // split frames and inputs
+                        string[] vals = nextline.Split(":", System.StringSplitOptions.RemoveEmptyEntries);
+                        float[] currentinput = new float[8];
+
+                        if (vals.Length == 2)
+                        {
+                            // check for keys
+                            for (int i = 0; i < keychecks.Length; i++)
+                            {
+                                currentinput[i] = vals[1].Contains(keychecks[i]) ? 1 : 0;
+                            }
+
+                            // repeat for the line frame count
+                            int inputlen = Convert.ToInt32(vals[0]);
+                            inputlengths.Add(inputlen);
+                            inputlines.Add(currentline);
+                            for (int hold = 0; hold < inputlen; hold++)
+                            {
+                                inputs.Add(currentinput);
+                                tasFrames++;
+                            }
+                        }
+                        else
+                        {
+                            Logger.LogError("invalid line: " + currentline);
+                        }
+                    }
+
+                    currentline++;
+                }
+            }
+            Logger.LogInfo("imported!");
+
+            tasReplay = true;
+            tasPause = false;
+            Time.timeScale = 1.0f;
+            tasFrames = 0;
+
+            // fix left/right input acceleration issues
+            InputEvent[] e =
+            [
+                new InputEvent(0, InputEvent.InputKey.Left, 1, true),
+                new InputEvent(0, InputEvent.InputKey.Left, 0, true),
+                new InputEvent(0, InputEvent.InputKey.Right, 1, true),
+                new InputEvent(0, InputEvent.InputKey.Right, 0, true),
+            ];
+            for (int i = 0; i < e.Length; i++)
+            {
+                mcharIR.Invoke(mcharScript, [e[i]]);
+            }
+        }
+        else
+        {
+            Logger.LogError("no file found at " + importpath);
+        }
+    }
+
     [HarmonyPatch(typeof(GameControl), "Update")]
     [HarmonyPostfix]
     static void TASControls()
@@ -184,214 +423,7 @@ public class jackalope : BaseUnityPlugin
         // import
         if (Input.GetKeyDown(KeyCode.Slash))
         {
-            // reset inputs
-            tasFrames = 0;
-            inputs = [];
-            inputlengths = [];
-            currentlength = 0;
-            inputlines = [];
-            breaks = [];
-            breakstop = -1;
-            setpos = [];
-            setvel = [];
-            legalmode = false;
-
-            // check and set import path
-            string pathtouse = "";
-            if (File.Exists(importpath.Value))
-            {
-                pathtouse = importpath.Value;
-            }
-            else if(File.Exists(importpath.Value + ".txt"))
-            {
-                pathtouse = importpath.Value + ".txt";
-            }
-
-            // check if path is valid
-            if (pathtouse != "")
-            {
-                using (StreamReader sr = File.OpenText(pathtouse))
-                {
-                    // set up variables; add an extra input to pad the start
-                    string nextline = "";
-                    string[] keychecks = { "w", "s", "a", "d", "j", "k", "l", "m" };
-                    inputs.Add(new float[8]);
-                    int currentline = 1;
-                    while ((nextline = sr.ReadLine()) != null)
-                    {
-                        // comments and blank lines
-                        if (nextline == "")
-                        {
-                            // do nothing
-                        }
-                        else if (nextline[0] == '#')
-                        {
-                            // do nothing
-                        }
-
-                        // commands
-                        else if (nextline[0] == '/')
-                        {
-                            string[] commandargs = nextline.Split(" ", System.StringSplitOptions.RemoveEmptyEntries);
-                            switch (commandargs[0])
-                            {
-                                case "/stop":
-                                    breakstop = tasFrames;
-                                    breaks.Add(tasFrames);
-                                    break;
-                                case "/b":
-                                case "/break":
-                                    breaks.Add(tasFrames);
-                                    break;
-                                case "/fjump":
-                                    typeof(Character).GetMethod("ForceJump").Invoke(mcharScript, []);
-                                    break;
-                                case "/setpos":
-                                    if (legalmode)
-                                    {
-                                        Logger.LogError("/setpos not allowed in legal mode");
-                                        break;
-                                    }
-                                    if (commandargs.Length == 3)
-                                    {
-                                        setpos.Add(new Vector3(
-                                            (float)Convert.ToDouble(commandargs[1]),
-                                            (float)Convert.ToDouble(commandargs[2]),
-                                            tasFrames
-                                        ));
-                                    }
-                                    else
-                                    {
-                                        Logger.LogError("invalid arguments: " + nextline);
-                                    }
-                                    break;
-                                case "/setvel":
-                                    if (legalmode)
-                                    {
-                                        Logger.LogError("/setvel not allowed in legal mode");
-                                        break;
-                                    }
-                                    if (commandargs.Length == 3)
-                                    {
-                                        setvel.Add(new Vector3(
-                                            (float)Convert.ToDouble(commandargs[1]),
-                                            (float)Convert.ToDouble(commandargs[2]),
-                                            tasFrames
-                                        ));
-                                    }
-                                    else
-                                    {
-                                        Logger.LogError("invalid arguments: " + nextline);
-                                    }
-                                    break;
-                                case "/legal":
-                                    legalmode = true;
-                                    break;
-                                case "/state":
-                                    if (commandargs.Length == 6)
-                                    {
-                                        int slot = Convert.ToInt32(commandargs[1]);
-                                        Logger.LogInfo("saving state " + slot);
-                                        statepos[slot] = new Vector2(
-                                            (float)Convert.ToDouble(commandargs[2]),
-                                            (float)Convert.ToDouble(commandargs[3])
-                                        );
-                                        statevel[slot] = new Vector2(
-                                            (float)Convert.ToDouble(commandargs[4]),
-                                            (float)Convert.ToDouble(commandargs[5])
-                                        );
-                                    }
-                                    else
-                                    {
-                                        Logger.LogError("invalid arguments: " + nextline);
-                                    }
-                                    break;
-                                case "/start":
-                                    if (legalmode)
-                                    {
-                                        Logger.LogError("/start not allowed in legal mode");
-                                        break;
-                                    }
-                                    if (commandargs.Length == 5)
-                                    {
-                                        mchar.transform.position = new Vector2(
-                                            (float)Convert.ToDouble(commandargs[1]),
-                                            (float)Convert.ToDouble(commandargs[2])
-                                        );
-                                        mcharBody.velocity = new Vector2(
-                                            (float)Convert.ToDouble(commandargs[3]),
-                                            (float)Convert.ToDouble(commandargs[4])
-                                        );
-                                    }
-                                    else
-                                    {
-                                        Logger.LogError("invalid arguments: " + nextline);
-                                    }
-                                    break;
-                                default:
-                                    Logger.LogError("invalid command in input file: " + nextline);
-                                    break;
-                            }
-                        }
-
-                        // input sequences
-                        else
-                        {
-                            // split frames and inputs
-                            string[] vals = nextline.Split(":", System.StringSplitOptions.RemoveEmptyEntries);
-                            float[] currentinput = new float[8];
-
-                            if (vals.Length == 2)
-                            {
-                                // check for keys
-                                for (int i = 0; i < keychecks.Length; i++)
-                                {
-                                    currentinput[i] = vals[1].Contains(keychecks[i]) ? 1 : 0;
-                                }
-
-                                // repeat for the line frame count
-                                int inputlen = Convert.ToInt32(vals[0]);
-                                inputlengths.Add(inputlen);
-                                inputlines.Add(currentline);
-                                for (int hold = 0; hold < inputlen; hold++)
-                                {
-                                    inputs.Add(currentinput);
-                                    tasFrames++;
-                                }
-                            }
-                            else
-                            {
-                                Logger.LogError("invalid line: " + currentline);
-                            }
-                        }
-
-                        currentline++;
-                    }
-                }
-                tasFrames = 0;
-                Logger.LogInfo("imported!");
-
-                tasReplay = true;
-                tasPause = false;
-                Time.timeScale = 1.0f;
-
-                // fix left/right input acceleration issues
-                InputEvent[] e =
-                [
-                    new InputEvent(0, InputEvent.InputKey.Left, 1, true),
-                    new InputEvent(0, InputEvent.InputKey.Left, 0, true),
-                    new InputEvent(0, InputEvent.InputKey.Right, 1, true),
-                    new InputEvent(0, InputEvent.InputKey.Right, 0, true),
-                ];
-                for (int i = 0; i < e.Length; i++)
-                {
-                    mcharIR.Invoke(mcharScript, [e[i]]);
-                }
-            }
-            else
-            {
-                Logger.LogError("no file found at " + importpath);
-            }
+            StartReplay();
         }
 
         // starting states
@@ -418,14 +450,7 @@ public class jackalope : BaseUnityPlugin
         // instant reset
         if (Input.GetKeyDown(KeyCode.Backspace))
         {
-            tasReplay = false;
-            tasPause = false;
-            Time.timeScale = 1.0f;
-            mcharScript.suicide = true;
-            typeof(Character).GetField("backDownOnEnable", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(mcharScript, false);
-            typeof(Character).GetField("suicideTimer", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(mcharScript, 5.0f);
-            typeof(Character).GetField("wantsToRetryUsed", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(mcharScript, false);
-            typeof(Character).GetMethod("UpdateSuicidalState", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(mcharScript, []);
+            InstantReset();
         }
     }
 
