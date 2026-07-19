@@ -119,7 +119,7 @@ public class jackalope : BaseUnityPlugin
     [HarmonyPostfix]
     static void FindCharacters()
     {
-        if (GameSparksManager.Instance.Connected && !GameState.GetInstance().currentSnapshotInfo.snapshotCode.NullOrEmpty() && cancontrol) return;
+        if(InvalidMode()) return;
         // scan for characters
         foreach (UnityEngine.Object obj in FindObjectsOfType(typeof(Character)))
         {
@@ -135,6 +135,13 @@ public class jackalope : BaseUnityPlugin
                 typeof(ZoomCamera).GetField("freeFormCamEnabled", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(zcam, true);
             }
         }
+    }
+
+    [HarmonyPatch(typeof(ActiveBlock), "OnEnable")]
+    [HarmonyPrefix]
+    static void FixedActiveBlocks(ref int ___ActUpdateMode)
+    {
+        if(!InvalidMode()) ___ActUpdateMode = 1;
     }
 
     static void InstantReset()
@@ -162,6 +169,11 @@ public class jackalope : BaseUnityPlugin
         typeof(ChallengeControl).GetField("singlePlayerDelayTime").SetValue(LobbyManager.instance.CurrentGameController, 0.0f);
         typeof(ChallengeControl).GetMethod("TriggerSinglePlayerStart", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(LobbyManager.instance.CurrentGameController, []);
         zcam.transform.position = new Vector3(mchar.transform.position.x, mchar.transform.position.y, -250);
+    }
+
+    static bool InvalidMode()
+    {
+        return GameSparksManager.Instance.Connected && !GameState.GetInstance().currentSnapshotInfo.snapshotCode.NullOrEmpty() && cancontrol;
     }
 
     static void StartReplay()
@@ -334,7 +346,7 @@ public class jackalope : BaseUnityPlugin
     static void TASControls()
     {
         // frame advance
-        if (GameSparksManager.Instance.Connected && !GameState.GetInstance().currentSnapshotInfo.snapshotCode.NullOrEmpty() && cancontrol) return;
+        if(InvalidMode()) return;
         if (Input.GetKeyDown(KeyCode.M) && tasPause)
         {
             Time.timeScale = 1.0f;
@@ -411,7 +423,7 @@ public class jackalope : BaseUnityPlugin
     [HarmonyPrefix]
     static void TASReplay()
     {
-        if (tasReplay && !(GameSparksManager.Instance.Connected && !GameState.GetInstance().currentSnapshotInfo.snapshotCode.NullOrEmpty() && cancontrol))
+        if (tasReplay && !InvalidMode())
         {
             // read inputs
             if (inputs.Count > tasFrames && mchar != null)
@@ -440,7 +452,7 @@ public class jackalope : BaseUnityPlugin
                 tasReplay = false;
             }
         }
-        if (tasResetting && !(GameSparksManager.Instance.Connected && !GameState.GetInstance().currentSnapshotInfo.snapshotCode.NullOrEmpty() && cancontrol))
+        if (tasResetting && !InvalidMode())
         {
             // disable reset mode
             if (Time.timeScale == 1.0f)
@@ -457,7 +469,7 @@ public class jackalope : BaseUnityPlugin
     [HarmonyPrefix]
     static void TASReset()
     {
-        if (!(GameSparksManager.Instance.Connected && !GameState.GetInstance().currentSnapshotInfo.snapshotCode.NullOrEmpty() && cancontrol))
+        if (!InvalidMode())
         {
             if (statsDisplay != null)
             {
@@ -477,8 +489,7 @@ public class jackalope : BaseUnityPlugin
     [HarmonyPostfix]
     static void TASStats()
     {
-        if (GameSparksManager.Instance.Connected && !GameState.GetInstance().currentSnapshotInfo.snapshotCode.NullOrEmpty() && cancontrol) return;
-        // set up stats display
+        if(InvalidMode()) return;
         if (statsDisplay == null)
         {
             Logger.LogInfo("finding text component...");
@@ -524,7 +535,7 @@ public class jackalope : BaseUnityPlugin
     static void TASUpdate()
     {
         // setpos and setvel commands
-        if (GameSparksManager.Instance.Connected && !GameState.GetInstance().currentSnapshotInfo.snapshotCode.NullOrEmpty() && cancontrol) return;
+        if(InvalidMode()) return;
         if (tasReplay)
         {
             if (setpos.Count > 0)
