@@ -68,6 +68,8 @@ public class jackalope : BaseUnityPlugin
 
     public static ZoomCamera zcam;
 
+    public static bool instantreplay = false;
+
     private void Awake()
     {
         // start plugin
@@ -177,6 +179,7 @@ public class jackalope : BaseUnityPlugin
         setpos = [];
         setvel = [];
         legalmode = false;
+        instantreplay = Input.GetKey(KeyCode.LeftShift);
 
         // check and set import path
         string pathtouse = "";
@@ -202,11 +205,7 @@ public class jackalope : BaseUnityPlugin
                 while ((nextline = sr.ReadLine()) != null)
                 {
                     // comments and blank lines
-                    if (nextline == "")
-                    {
-                        // do nothing
-                    }
-                    else if (nextline[0] == '#')
+                    if (nextline == "" || nextline[0] == '#')
                     {
                         // do nothing
                     }
@@ -236,11 +235,7 @@ public class jackalope : BaseUnityPlugin
                                 }
                                 if (commandargs.Length == 3)
                                 {
-                                    setpos.Add(new Vector3(
-                                        (float)Convert.ToDouble(commandargs[1]),
-                                        (float)Convert.ToDouble(commandargs[2]),
-                                        tasFrames
-                                    ));
+                                    setpos.Add(new Vector3((float)Convert.ToDouble(commandargs[1]), (float)Convert.ToDouble(commandargs[2]), tasFrames));
                                 }
                                 else
                                 {
@@ -255,11 +250,7 @@ public class jackalope : BaseUnityPlugin
                                 }
                                 if (commandargs.Length == 3)
                                 {
-                                    setvel.Add(new Vector3(
-                                        (float)Convert.ToDouble(commandargs[1]),
-                                        (float)Convert.ToDouble(commandargs[2]),
-                                        tasFrames
-                                    ));
+                                    setvel.Add(new Vector3((float)Convert.ToDouble(commandargs[1]), (float)Convert.ToDouble(commandargs[2]), tasFrames));
                                 }
                                 else
                                 {
@@ -274,14 +265,8 @@ public class jackalope : BaseUnityPlugin
                                 {
                                     int slot = Convert.ToInt32(commandargs[1]);
                                     Logger.LogInfo("saving state " + slot);
-                                    statepos[slot] = new Vector2(
-                                        (float)Convert.ToDouble(commandargs[2]),
-                                        (float)Convert.ToDouble(commandargs[3])
-                                    );
-                                    statevel[slot] = new Vector2(
-                                        (float)Convert.ToDouble(commandargs[4]),
-                                        (float)Convert.ToDouble(commandargs[5])
-                                    );
+                                    statepos[slot] = new Vector2((float)Convert.ToDouble(commandargs[2]), (float)Convert.ToDouble(commandargs[3]));
+                                    statevel[slot] = new Vector2((float)Convert.ToDouble(commandargs[4]), (float)Convert.ToDouble(commandargs[5]));
                                 }
                                 else
                                 {
@@ -296,14 +281,8 @@ public class jackalope : BaseUnityPlugin
                                 }
                                 if (commandargs.Length == 5)
                                 {
-                                    mchar.transform.position = new Vector2(
-                                        (float)Convert.ToDouble(commandargs[1]),
-                                        (float)Convert.ToDouble(commandargs[2])
-                                    );
-                                    mcharBody.velocity = new Vector2(
-                                        (float)Convert.ToDouble(commandargs[3]),
-                                        (float)Convert.ToDouble(commandargs[4])
-                                    );
+                                    mchar.transform.position = new Vector2((float)Convert.ToDouble(commandargs[1]), (float)Convert.ToDouble(commandargs[2]));
+                                    mcharBody.velocity = new Vector2((float)Convert.ToDouble(commandargs[3]), (float)Convert.ToDouble(commandargs[4]));
                                 }
                                 else
                                 {
@@ -348,13 +327,16 @@ public class jackalope : BaseUnityPlugin
                     }
 
                     currentline++;
+
+                    if(breakstop >= 0) break;
                 }
             }
             Logger.LogInfo("imported!");
 
             tasReplay = true;
             tasPause = false;
-            Time.timeScale = 1.0f;
+            Time.timeScale = instantreplay ? tasFrames : 1.0f;
+            if(instantreplay && breaks.Count > 0) Time.timeScale = breaks[0];
             tasFrames = 0;
 
             // fix left/right input acceleration issues
@@ -478,6 +460,7 @@ public class jackalope : BaseUnityPlugin
                 {
                     mcharIR.Invoke(mcharScript, [e[i]]);
                 }
+                if(instantreplay) mcharScript.lastJumpDownTimer = 1f;
             }
             else
             {
