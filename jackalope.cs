@@ -60,8 +60,6 @@ public class jackalope : BaseUnityPlugin
 
     public static List<Vector3> setvel;
 
-    public static bool legalmode = false;
-
     public static Vector2[] statepos;
 
     public static Vector2[] statevel;
@@ -178,7 +176,6 @@ public class jackalope : BaseUnityPlugin
         breakstop = -1;
         setpos = [];
         setvel = [];
-        legalmode = false;
         instantreplay = Input.GetKey(KeyCode.LeftShift);
 
         // check and set import path
@@ -228,66 +225,40 @@ public class jackalope : BaseUnityPlugin
                                 typeof(Character).GetMethod("ForceJump").Invoke(mcharScript, []);
                                 break;
                             case "/setpos":
-                                if (legalmode)
-                                {
-                                    Logger.LogError("/setpos not allowed in legal mode");
-                                    break;
-                                }
-                                if (commandargs.Length == 3)
-                                {
-                                    setpos.Add(new Vector3((float)Convert.ToDouble(commandargs[1]), (float)Convert.ToDouble(commandargs[2]), tasFrames));
-                                }
-                                else
+                                if (commandargs.Length != 3)
                                 {
                                     Logger.LogError("invalid arguments: " + nextline);
+                                    break;
                                 }
+                                setpos.Add(new Vector3((float)Convert.ToDouble(commandargs[1]), (float)Convert.ToDouble(commandargs[2]), tasFrames));
                                 break;
                             case "/setvel":
-                                if (legalmode)
-                                {
-                                    Logger.LogError("/setvel not allowed in legal mode");
-                                    break;
-                                }
-                                if (commandargs.Length == 3)
-                                {
-                                    setvel.Add(new Vector3((float)Convert.ToDouble(commandargs[1]), (float)Convert.ToDouble(commandargs[2]), tasFrames));
-                                }
-                                else
+                                if (commandargs.Length != 3)
                                 {
                                     Logger.LogError("invalid arguments: " + nextline);
+                                    break;
                                 }
-                                break;
-                            case "/legal":
-                                legalmode = true;
+                                setvel.Add(new Vector3((float)Convert.ToDouble(commandargs[1]), (float)Convert.ToDouble(commandargs[2]), tasFrames));
                                 break;
                             case "/state":
-                                if (commandargs.Length == 6)
-                                {
-                                    int slot = Convert.ToInt32(commandargs[1]);
-                                    Logger.LogInfo("saving state " + slot);
-                                    statepos[slot] = new Vector2((float)Convert.ToDouble(commandargs[2]), (float)Convert.ToDouble(commandargs[3]));
-                                    statevel[slot] = new Vector2((float)Convert.ToDouble(commandargs[4]), (float)Convert.ToDouble(commandargs[5]));
-                                }
-                                else
+                                if (commandargs.Length != 6)
                                 {
                                     Logger.LogError("invalid arguments: " + nextline);
-                                }
-                                break;
-                            case "/start":
-                                if (legalmode)
-                                {
-                                    Logger.LogError("/start not allowed in legal mode");
                                     break;
                                 }
-                                if (commandargs.Length == 5)
-                                {
-                                    mchar.transform.position = new Vector2((float)Convert.ToDouble(commandargs[1]), (float)Convert.ToDouble(commandargs[2]));
-                                    mcharBody.velocity = new Vector2((float)Convert.ToDouble(commandargs[3]), (float)Convert.ToDouble(commandargs[4]));
-                                }
-                                else
+                                int slot = Convert.ToInt32(commandargs[1]);
+                                Logger.LogInfo("saving state " + slot);
+                                statepos[slot] = new Vector2((float)Convert.ToDouble(commandargs[2]), (float)Convert.ToDouble(commandargs[3]));
+                                statevel[slot] = new Vector2((float)Convert.ToDouble(commandargs[4]), (float)Convert.ToDouble(commandargs[5]));
+                                break;
+                            case "/start":
+                                if (commandargs.Length != 5)
                                 {
                                     Logger.LogError("invalid arguments: " + nextline);
+                                    break;
                                 }
+                                mchar.transform.position = new Vector2((float)Convert.ToDouble(commandargs[1]), (float)Convert.ToDouble(commandargs[2]));
+                                mcharBody.velocity = new Vector2((float)Convert.ToDouble(commandargs[3]), (float)Convert.ToDouble(commandargs[4]));
                                 break;
                             default:
                                 Logger.LogError("invalid command in input file: " + nextline);
@@ -554,7 +525,7 @@ public class jackalope : BaseUnityPlugin
     {
         // setpos and setvel commands
         if (GameSparksManager.Instance.Connected && !GameState.GetInstance().currentSnapshotInfo.snapshotCode.NullOrEmpty() && cancontrol) return;
-        if (!legalmode && tasReplay)
+        if (tasReplay)
         {
             if (setpos.Count > 0)
             {

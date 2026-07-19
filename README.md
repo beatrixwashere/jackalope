@@ -30,14 +30,13 @@ read the sections below to get started!
 - `,` = pause/unpause
 - `.` = slowdown game
 - `/` = import inputs
+- `shift+/` instant replay
 - `-` = toggle replay
 - `=` = fast forward
 - `f1` = config manager (if installed)
 - `0-9` = load savestate
 - `shift+0-9` = save savestate
 - `backspace` = instant reset
-
-*note: savestates currently only save position and velocity*
 
 **freecam controls:**
 - `\` = enable freecam
@@ -77,7 +76,6 @@ each line of an input file is formatted as `frames:inputs`. `inputs` is a comma 
 - `/fjump` = recreates buffering a jump at the start [only use once]
 - `/setpos x y` = sets the character's position to (x, y) [not legal]
 - `/setvel x y` = sets the chatacter's velocity to (x, y) [not legal]
-- `/legal` = only allows legal inputs/commands [only use once]
 - `/state # px py vx vy` = saves a state to key # with position (px, py) and velocity (vx, vy)
 - `/start px py vx vy` = sets position (px, py) and velocity (vx, vy) [not legal]
 
@@ -99,11 +97,11 @@ all releases are in a stable state, but there are still many features or fixes y
 
 **fixes:**
 - `/fjump` might not be fully accurate
+- instant replay has inaccuracies
+- savestates only save position and velocity
 - fast forward has inconsistencies, especially with cycles
-- holding the give up key should break out pause and replay mode
 - mac still needs testing
 - stabilize object references
-- some input file changes can make unintended desyncs(?)
 - `/setpos` and `/setvel` have some inconsistencies
 - *these are known bugs; remember to report anything not included in this list!*
 
