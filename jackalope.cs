@@ -9,6 +9,7 @@ using BepInEx.Configuration;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Networking;
 
 namespace jackalope;
 
@@ -88,25 +89,22 @@ public class jackalope : BaseUnityPlugin
         Logger.LogInfo("enabled control");
     }
 
-    [HarmonyPatch(typeof(Character), "Awake")]
+    [HarmonyPatch(typeof(Character), "Enable")]
     [HarmonyPostfix]
-    static void FindCharacters()
+    static void FindCharacters(Character __instance)
     {
         if(InvalidMode()) return;
-        // scan for characters
-        foreach (UnityEngine.Object obj in FindObjectsOfType(typeof(Character)))
+        if(GameSettings.GetInstance().GameMode != GameState.GameMode.CHALLENGE) return;
+        Logger.LogInfo("attempting connection on " + __instance.gameObject.name);
+        if(__instance.transform.position.x != -1000f && __instance.transform.position.y != -1000f)
         {
-            // check for challenge mode name
-            if (obj.name == "NotAMeatboy(Clone)")
-            {
-                Logger.LogInfo("character connected!");
-                mchar = GameObject.Find("NotAMeatboy(Clone)");
-                mcharScript = mchar.GetComponent<Character>();
-                mcharBody = mchar.GetComponent<Rigidbody2D>();
-                mcharIR = typeof(Character).GetMethod("ReceiveEvent");
-                zcam = LobbyManager.instance.CurrentGameController.MainCamera;
-                typeof(ZoomCamera).GetField("freeFormCamEnabled", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(zcam, true);
-            }
+            Logger.LogInfo("character connected!");
+            mchar = __instance.gameObject;
+            mcharScript = __instance;
+            mcharBody = mchar.GetComponent<Rigidbody2D>();
+            mcharIR = typeof(Character).GetMethod("ReceiveEvent");
+            zcam = LobbyManager.instance.CurrentGameController.MainCamera;
+            typeof(ZoomCamera).GetField("freeFormCamEnabled", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(zcam, true);
         }
     }
 
@@ -119,6 +117,7 @@ public class jackalope : BaseUnityPlugin
 
     static void InstantReset()
     {
+        if(mchar == null) return;
         tasReplay = false;
         tasPause = true;
         Time.timeScale = 1.0f;
