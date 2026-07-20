@@ -9,63 +9,36 @@ using BepInEx.Configuration;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Linq;
-using UnityEngine.UIElements.UIR;
 
 namespace jackalope;
 
-//[BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
-[BepInPlugin("com.beatrixwashere.uch.jackalope", "jackalope", "1.1.3")]
+[BepInPlugin("com.beatrixwashere.uch.jackalope", "jackalope", "1.2.0")]
 public class jackalope : BaseUnityPlugin
 {
     internal static new ManualLogSource Logger;
-
     private static ConfigEntry<string> importpath;
-
     public static bool tasPause = false;
-
     public static int tasFrames = 0;
-
     public static bool tasReplay = false;
-
     public static bool tasResetting = false;
-
     public static bool cancontrol = false;
-
     public static Text statsDisplay;
-
     public static StringBuilder timerBuild = new StringBuilder(256);
-
     public static GameObject mchar;
-
     public static Character mcharScript;
-
     public static Rigidbody2D mcharBody;
-
     public static MethodInfo mcharIR;
-
     public static List<float[]> inputs; // [up, down, left, right, jump, sprint, suicide, dance]
-
     public static List<int> inputlengths;
-
     public static int currentlength;
-
     public static List<int> inputlines;
-
     public static List<int> breaks;
-
     public static int breakstop = -1;
-
     public static List<Vector3> setpos;
-
     public static List<Vector3> setvel;
-
     public static Vector2[] statepos;
-
     public static Vector2[] statevel;
-
     public static ZoomCamera zcam;
-
     public static bool instantreplay = false;
 
     private void Awake()
